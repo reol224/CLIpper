@@ -173,11 +173,13 @@ export default function InstallationPage() {
         
         <div className="mt-4 flex gap-3">
           <a 
-            href={downloadLinks[detectedOS]}
+            href="https://github.com/reol224/CLIpper/releases"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-black rounded font-medium transition-colors"
           >
             <Download className="w-4 h-4" />
-            Download CLIpper
+            Releases
           </a>
           {!isCheckingUpdates && updateAvailable && (
             <a 
