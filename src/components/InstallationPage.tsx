@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Terminal, Copy, Download, CheckCircle, ExternalLink, Monitor, HardDrive } from "lucide-react";
+import {
+  Terminal,
+  Copy,
+  Download,
+  CheckCircle,
+  ExternalLink,
+  Monitor,
+  HardDrive,
+} from "lucide-react";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
@@ -25,8 +39,8 @@ export default function InstallationPage() {
   const [detectedOS, setDetectedOS] = useState<string>("");
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [latestVersion, setLatestVersion] = useState('1.0.0');
-  const [currentVersion] = useState('1.0.0'); // This would come from your app config
+  const [latestVersion, setLatestVersion] = useState("1.0.0");
+  const [currentVersion] = useState("1.0.0"); // This would come from your app config
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(true);
 
   useEffect(() => {
@@ -44,15 +58,21 @@ export default function InstallationPage() {
   }, []);
 
   const quickInstallCommands = {
-    windows: "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.ps1 | iex",
-    macos: "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
-    linux: "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | sudo bash"
+    windows:
+      "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.ps1 | iex",
+    macos:
+      "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
+    linux:
+      "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh | sudo bash",
   };
 
   const downloadLinks = {
-    windows: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe",
-    macos: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz", 
-    linux: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.gz"
+    windows:
+      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe",
+    macos:
+      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz",
+    linux:
+      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh",
   };
 
   const copyToClipboard = async (text: string, commandType: string) => {
@@ -61,35 +81,41 @@ export default function InstallationPage() {
       setCopiedCommand(commandType);
       setTimeout(() => setCopiedCommand(null), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   };
 
   const osConfigs: Record<string, OSInfo> = {
     windows: {
-      name: 'Windows',
+      name: "Windows",
       icon: <Monitor className="w-5 h-5" />,
-      installCommand: 'irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.ps1 | iex',
-      runCommand: 'clipper --help',
-      requirements: ['PowerShell', 'Administrator privileges', 'Windows 10/11'],
-      downloadUrl: 'https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe'
+      installCommand:
+        "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.ps1 | iex",
+      runCommand: "clipper --help",
+      requirements: ["PowerShell", "Administrator privileges", "Windows 10/11"],
+      downloadUrl:
+        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe",
     },
     macos: {
-      name: 'macOS',
+      name: "macOS",
       icon: <HardDrive className="w-5 h-5" />,
-      installCommand: 'curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash',
-      runCommand: 'clipper --help',
-      requirements: ['Terminal', 'macOS 10.15+', 'curl'],
-      downloadUrl: 'https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz'
+      installCommand:
+        "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
+      runCommand: "clipper --help",
+      requirements: ["Terminal", "macOS 10.15+", "curl"],
+      downloadUrl:
+        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz",
     },
     linux: {
-      name: 'Linux',
+      name: "Linux",
       icon: <Terminal className="w-5 h-5" />,
-      installCommand: 'curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | sudo bash',
-      runCommand: 'clipper --help',
-      requirements: ['Terminal', 'sudo privileges', 'curl'],
-      downloadUrl: 'https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.gz'
-    }
+      installCommand:
+        "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh | sudo bash",
+      runCommand: "clipper --help",
+      requirements: ["Terminal", "sudo privileges", "curl"],
+      downloadUrl:
+        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.gz",
+    },
   };
 
   // Check for updates from GitHub releases
@@ -97,44 +123,50 @@ export default function InstallationPage() {
     const checkForUpdates = async () => {
       try {
         setIsCheckingUpdates(true);
-        const response = await fetch('https://api.github.com/repos/reol224/CLIpper/releases/latest');
-        
+        const response = await fetch(
+          "https://api.github.com/repos/reol224/CLIpper/releases/latest",
+        );
+
         if (response.ok) {
           const release: GitHubRelease = await response.json();
-          const latestVersionTag = release.tag_name.replace(/^v/, ''); // Remove 'v' prefix if present
-          
+          const latestVersionTag = release.tag_name.replace(/^v/, ""); // Remove 'v' prefix if present
+
           setLatestVersion(latestVersionTag);
-          
+
           // Compare versions (simple string comparison for now)
           // For more complex version comparison, you might want to use a library like semver
           const isNewer = compareVersions(latestVersionTag, currentVersion);
           setUpdateAvailable(isNewer);
         } else {
-          console.warn('Failed to fetch latest release from GitHub');
+          console.warn("Failed to fetch latest release from GitHub");
         }
       } catch (error) {
-        console.error('Error checking for updates:', error);
+        console.error("Error checking for updates:", error);
       } finally {
         setIsCheckingUpdates(false);
       }
     };
-    
+
     checkForUpdates();
   }, [currentVersion]);
 
   // Simple version comparison function
   const compareVersions = (latest: string, current: string): boolean => {
-    const latestParts = latest.split('.').map(Number);
-    const currentParts = current.split('.').map(Number);
-    
-    for (let i = 0; i < Math.max(latestParts.length, currentParts.length); i++) {
+    const latestParts = latest.split(".").map(Number);
+    const currentParts = current.split(".").map(Number);
+
+    for (
+      let i = 0;
+      i < Math.max(latestParts.length, currentParts.length);
+      i++
+    ) {
       const latestPart = latestParts[i] || 0;
       const currentPart = currentParts[i] || 0;
-      
+
       if (latestPart > currentPart) return true;
       if (latestPart < currentPart) return false;
     }
-    
+
     return false; // Versions are equal
   };
 
@@ -148,8 +180,10 @@ export default function InstallationPage() {
           <Terminal className="w-6 h-6" />
           <h1 className="text-2xl font-bold">CLIpper</h1>
         </div>
-        <p className="text-gray-300">Cross-platform system management and security tool</p>
-        
+        <p className="text-gray-300">
+          Cross-platform system management and security tool
+        </p>
+
         {/* Update Alert */}
         {!isCheckingUpdates && updateAvailable && (
           <Alert className="mt-4 bg-yellow-900 border-yellow-600">
@@ -157,8 +191,8 @@ export default function InstallationPage() {
               🔄 Update Available
             </AlertTitle>
             <AlertDescription className="text-yellow-200">
-              CLIpper v{latestVersion} is now available! 
-              <a 
+              CLIpper v{latestVersion} is now available!
+              <a
                 href="https://github.com/reol224/CLIpper/releases/latest"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -170,9 +204,9 @@ export default function InstallationPage() {
             </AlertDescription>
           </Alert>
         )}
-        
+
         <div className="mt-4 flex gap-3">
-          <a 
+          <a
             href="https://github.com/reol224/CLIpper/releases"
             target="_blank"
             rel="noopener noreferrer"
@@ -182,7 +216,7 @@ export default function InstallationPage() {
             Releases
           </a>
           {!isCheckingUpdates && updateAvailable && (
-            <a 
+            <a
               href="https://github.com/reol224/CLIpper/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
@@ -212,17 +246,21 @@ export default function InstallationPage() {
             </Badge>
             <span className="text-sm text-gray-400">Auto-detected</span>
           </div>
-          
+
           <div className="bg-black p-4 rounded border border-gray-600">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-400">Copy and paste in terminal:</span>
+              <span className="text-sm text-gray-400">
+                Copy and paste in terminal:
+              </span>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => copyToClipboard(quickInstallCommands[detectedOS], 'quick')}
+                onClick={() =>
+                  copyToClipboard(quickInstallCommands[detectedOS], "quick")
+                }
                 className="text-green-400 border-green-400 hover:bg-green-400 hover:text-black"
               >
-                {copiedCommand === 'quick' ? (
+                {copiedCommand === "quick" ? (
                   <CheckCircle className="w-4 h-4" />
                 ) : (
                   <Copy className="w-4 h-4" />
@@ -239,14 +277,18 @@ export default function InstallationPage() {
               <CardContent className="p-4 text-center">
                 <Terminal className="w-8 h-8 mx-auto mb-2 text-blue-400" />
                 <h3 className="font-semibold mb-1">Command Line</h3>
-                <p className="text-sm text-gray-400 mb-3">Install via terminal</p>
+                <p className="text-sm text-gray-400 mb-3">
+                  Install via terminal
+                </p>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => copyToClipboard(quickInstallCommands[detectedOS], 'cli')}
+                  onClick={() =>
+                    copyToClipboard(quickInstallCommands[detectedOS], "cli")
+                  }
                   className="w-full"
                 >
-                  {copiedCommand === 'cli' ? 'Copied!' : 'Copy Command'}
+                  {copiedCommand === "cli" ? "Copied!" : "Copy Command"}
                 </Button>
               </CardContent>
             </Card>
@@ -255,14 +297,16 @@ export default function InstallationPage() {
               <CardContent className="p-4 text-center">
                 <Download className="w-8 h-8 mx-auto mb-2 text-green-400" />
                 <h3 className="font-semibold mb-1">Direct Download</h3>
-                <p className="text-sm text-gray-400 mb-3">Download executable</p>
+                <p className="text-sm text-gray-400 mb-3">
+                  Download executable
+                </p>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    const link = document.createElement('a');
+                    const link = document.createElement("a");
                     link.href = downloadLinks[detectedOS];
-                    link.download = '';
+                    link.download = "";
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -317,7 +361,9 @@ export default function InstallationPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => copyToClipboard(currentOS.installCommand, "install")}
+                  onClick={() =>
+                    copyToClipboard(currentOS.installCommand, "install")
+                  }
                   className="text-green-400 hover:text-green-300 hover:bg-green-900/20"
                 >
                   <Copy className="w-4 h-4" />
