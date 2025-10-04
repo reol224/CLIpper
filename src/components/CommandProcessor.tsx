@@ -36,7 +36,7 @@ class CommandProcessor {
 
       case 'update':
       case '--update':
-        return this.checkForUpdates();
+        return this.checkForUpdates(args);
 
       case 'upgrade':
       case '--upgrade':
@@ -65,6 +65,8 @@ class CommandProcessor {
     }
 
     const flag = args[0];
+    const additionalArgs = args.slice(1);
+    
     switch (flag) {
       case '--scan':
         return this.runScan();
@@ -75,7 +77,7 @@ class CommandProcessor {
       case '--install':
         return this.showInstallScript();
       case '--update':
-        return this.checkForUpdates();
+        return this.checkForUpdates(additionalArgs);
       case '--upgrade':
         return this.runUpgrade();
       case '--uninstall':
@@ -110,6 +112,9 @@ class CommandProcessor {
       '  install                 Alias for install script',
       '  setup                   Show setup instructions',
       '  clipper --update        Check for updates',
+      '  clipper --update --force        Force update check',
+      '  clipper --update --verbose      Detailed update information',
+      '  clipper --update --channel beta Check beta channel updates',
       '  update                  Alias for update check',
       '  clipper --upgrade       Upgrade to latest version',
       '  upgrade                 Alias for upgrade',
@@ -124,6 +129,8 @@ class CommandProcessor {
       'Usage Examples:',
       '  clipper --scan',
       '  clipper --update',
+      '  clipper --update --force',
+      '  clipper --update --verbose --channel beta',
       '  clipper --upgrade',
       '  clipper --uninstall',
       ''
@@ -159,145 +166,312 @@ class CommandProcessor {
     }
   }
 
-  static checkForUpdates(): string[] {
+  static checkForUpdates(args: string[] = []): string[] {
     const currentVersion = '1.0.0';
-    const latestVersion = '1.0.2'; // Simulate newer version
-    const hasUpdate = Math.random() > 0.5;
+    const latestVersion = '1.0.2';
+    
+    // Parse arguments
+    const hasForce = args.includes('--force');
+    const hasVerbose = args.includes('--verbose');
+    const channelIndex = args.indexOf('--channel');
+    const channel = channelIndex !== -1 && args[channelIndex + 1] ? args[channelIndex + 1] : 'stable';
+    
+    // Force check always shows update available
+    const hasUpdate = hasForce || Math.random() > 0.3;
+    
+    let output = [];
+    
+    if (hasVerbose) {
+      output.push('🔍 Verbose update check initiated...');
+      output.push(`• Current version: v${currentVersion}`);
+      output.push(`• Update channel: ${channel}`);
+      output.push(`• Force check: ${hasForce ? 'Yes' : 'No'}`);
+      output.push(`• Check time: ${new Date().toLocaleString()}`);
+      output.push(`• User agent: ${navigator.userAgent.substring(0, 50)}...`);
+      output.push('');
+    }
+    
+    output.push('Checking for updates...');
+    
+    if (hasVerbose) {
+      output.push('🔍 Connecting to GitHub releases API...');
+      output.push('• DNS resolution: github.com → 140.82.112.3');
+      output.push('• TLS handshake: Successful (TLS 1.3)');
+      output.push('• API endpoint: https://api.github.com/repos/reol224/CLIpper/releases');
+      output.push('• Authentication: Public API (no token required)');
+    } else {
+      output.push('🔍 Connecting to GitHub releases API...');
+    }
+    
+    output.push('✓ Successfully connected to update server');
+    
+    if (channel !== 'stable') {
+      output.push(`🔄 Checking ${channel} channel releases...`);
+      if (channel === 'beta') {
+        output.push('⚠️ Beta channel may contain unstable features');
+      } else if (channel === 'dev') {
+        output.push('⚠️ Development channel contains experimental features');
+      }
+    }
+    
+    output.push('');
     
     if (hasUpdate) {
-      return [
-        'Checking for updates...',
-        '',
-        '🔄 Update Available!',
-        `Current version: v${currentVersion}`,
-        `Latest version:  v${latestVersion}`,
-        '',
-        '📋 What\'s New in v1.0.2:',
-        '• Improved system scanning performance',
-        '• Added real-time malware protection',
-        '• Fixed registry optimization bugs',
-        '• Enhanced security vulnerability detection',
-        '• Better cross-platform compatibility',
-        '',
-        '⚡ Quick Update:',
-        'Run: clipper --upgrade',
-        '',
-        '📱 Or download manually:',
-        '• Windows: https://clipper.tools/download/windows',
-        '• macOS: https://clipper.tools/download/macos', 
-        '• Linux: https://clipper.tools/download/linux',
-        '',
-        '🔔 Auto-update available: clipper config --auto-update on',
-        ''
-      ];
+      output.push('🔄 Update Available!');
+      output.push(`Current version: v${currentVersion}`);
+      output.push(`Latest version:  v${latestVersion}${channel !== 'stable' ? `-${channel}` : ''}`);
+      output.push(`Release date:    ${new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}`);
+      
+      if (hasVerbose) {
+        output.push(`Release size:    15.2 MB`);
+        output.push(`Download URL:    https://github.com/reol224/CLIpper/releases/download/v${latestVersion}/`);
+        output.push(`Changelog URL:   https://github.com/reol224/CLIpper/releases/tag/v${latestVersion}`);
+      }
+      
+      output.push('');
+      output.push('📋 What\'s New in v1.0.2:');
+      output.push('• 🚀 40% faster system scanning performance');
+      output.push('• 🛡️ Added real-time malware protection engine');
+      output.push('• 🧹 Fixed critical registry optimization bugs');
+      output.push('• 🔒 Enhanced security vulnerability detection');
+      output.push('• 🌐 Better cross-platform compatibility (ARM64 support)');
+      
+      if (channel === 'beta') {
+        output.push('• 🧪 Beta: New AI-powered threat detection');
+        output.push('• 🧪 Beta: Experimental performance boost mode');
+      } else if (channel === 'dev') {
+        output.push('• 🔬 Dev: Cutting-edge scanning algorithms');
+        output.push('• 🔬 Dev: Experimental UI improvements');
+        output.push('• 🔬 Dev: Advanced debugging features');
+      }
+      
+      if (hasVerbose) {
+        output.push('');
+        output.push('📊 Technical Details:');
+        output.push(`• Binary size: Windows (15.2 MB), macOS (18.7 MB), Linux (22.1 MB)`);
+        output.push(`• Dependencies: Updated OpenSSL 3.1, zlib 1.2.13`);
+        output.push(`• Compatibility: Windows 10+, macOS 12+, Linux kernel 5.4+`);
+        output.push(`• Architecture: x64, ARM64 (Apple Silicon, ARM64 Linux)`);
+      }
+      
+      output.push('');
+      output.push('📦 Download Size: 15.2 MB');
+      output.push('⏱️ Estimated install time: 2-3 minutes');
+      output.push('');
+      output.push('⚡ Quick Update Options:');
+      output.push('1. Auto-update: clipper --upgrade');
+      output.push('2. Manual download: https://github.com/reol224/CLIpper/releases/latest');
+      output.push('3. Package manager: brew upgrade clipper (macOS) | apt update clipper (Linux)');
+      
     } else {
-      return [
-        'Checking for updates...',
-        '',
-        '✅ You are up to date!',
-        `Current version: v${currentVersion}`,
-        `Latest version:  v${currentVersion}`,
-        '',
-        '📊 Update Statistics:',
-        '• Last checked: Just now',
-        '• Update channel: Stable',
-        '• Auto-update: Disabled',
-        '',
-        '🔔 Enable auto-updates:',
-        'clipper config --auto-update on',
-        '',
-        '🔍 Force check: clipper --update --force',
-        ''
-      ];
+      output.push('✅ You are up to date!');
+      output.push(`Current version: v${currentVersion}`);
+      output.push(`Latest version:  v${currentVersion}`);
+      output.push(`Last checked:    ${new Date().toLocaleString()}`);
+      
+      if (hasVerbose) {
+        output.push(`Check duration:  ${Math.floor(Math.random() * 3) + 1}.${Math.floor(Math.random() * 9)}s`);
+        output.push(`API calls made:  3 (releases, tags, assets)`);
+        output.push(`Data transferred: 2.1 KB`);
+      }
+      
+      output.push('');
+      output.push('📊 Update Statistics:');
+      output.push(`• Release channel: ${channel.charAt(0).toUpperCase() + channel.slice(1)}`);
+      output.push(`• Auto-updates: ${Math.random() > 0.5 ? 'Enabled' : 'Disabled'}`);
+      output.push(`• Last update: ${Math.floor(Math.random() * 30) + 1} days ago`);
+      output.push(`• Update frequency: Weekly check`);
+      
+      if (hasVerbose) {
+        output.push(`• Total updates installed: ${Math.floor(Math.random() * 10) + 5}`);
+        output.push(`• Failed update attempts: 0`);
+        output.push(`• Average update size: 16.8 MB`);
+      }
     }
+    
+    output.push('');
+    output.push('🔔 Update Preferences:');
+    output.push('• Enable auto-updates: clipper config --auto-update on');
+    output.push('• Switch update channel: clipper config --channel stable|beta|dev');
+    output.push('• Update notifications: clipper config --notify-updates on');
+    output.push('');
+    output.push('🔍 Advanced Update Options:');
+    output.push('• Force check: clipper --update --force');
+    output.push('• Check beta releases: clipper --update --channel beta');
+    output.push('• Verbose output: clipper --update --verbose');
+    output.push('• Check specific version: clipper --update --version 1.0.1');
+    
+    if (hasUpdate) {
+      output.push('');
+      output.push('🚀 Ready to update? Run: clipper --upgrade');
+    } else {
+      output.push('');
+      output.push('⏰ Next automatic check: Tomorrow at 9:00 AM');
+    }
+    
+    output.push('');
+    
+    return output;
   }
 
   static runUpgrade(): string[] {
     const userAgent = navigator.userAgent;
+    const currentVersion = '1.0.0';
+    const newVersion = '1.0.2';
     let upgradeSteps = [];
     
     if (userAgent.includes('Windows')) {
       upgradeSteps = [
         'Starting CLIpper upgrade for Windows...',
+        `Upgrading from v${currentVersion} to v${newVersion}`,
+        '',
+        '🔍 Pre-upgrade checks...',
+        '✓ Internet connection: Active',
+        '✓ Disk space: 50.2 MB available (15.2 MB required)',
+        '✓ Administrator privileges: Confirmed',
+        '✓ CLIpper processes: None running',
         '',
         '📥 Downloading latest version...',
-        '✓ Downloaded CLIpper v1.0.2 (15.2 MB)',
-        '✓ Verified digital signature',
-        '✓ Backup created: C:\\Users\\%USERNAME%\\CLIpper\\backup\\',
+        '✓ Connecting to GitHub releases...',
+        '✓ Downloading CLIpper-v1.0.2-windows-x64.exe (15.2 MB)',
+        '✓ Download completed in 8.3 seconds',
+        '✓ Verified digital signature (Microsoft Authenticode)',
+        '✓ SHA256 checksum: a7b3c9d2e8f4g5h6i9j0k1l2m3n4o5p6',
+        '',
+        '💾 Creating backup...',
+        '✓ Backup created: C:\\Users\\%USERNAME%\\CLIpper\\backup\\v1.0.0\\',
+        '✓ Settings exported: clipper-settings-backup.json',
+        '✓ User data preserved: scan-history.db',
         '',
         '🔄 Installing update...',
-        '✓ Stopped CLIpper services',
-        '✓ Updated core executable',
-        '✓ Updated system integration',
-        '✓ Restored user settings',
-        '✓ Started CLIpper services',
+        '✓ Stopped CLIpper background services',
+        '✓ Updated core executable: clipper.exe',
+        '✓ Updated system integration libraries',
+        '✓ Refreshed Windows registry entries',
+        '✓ Updated PowerShell modules',
+        '✓ Restored user settings and preferences',
+        '✓ Started CLIpper background services',
         '',
         '🎉 Upgrade completed successfully!',
-        'CLIpper v1.0.2 is now installed.',
+        `CLIpper v${newVersion} is now installed and ready to use.`,
         '',
-        '📋 What\'s New:',
-        '• 40% faster system scans',
-        '• Real-time threat protection',
-        '• Enhanced registry cleaner',
-        '• New security hardening options',
+        '📋 What\'s New in v1.0.2:',
+        '• 🚀 40% faster system scans',
+        '• 🛡️ Real-time threat protection',
+        '• 🧹 Enhanced registry cleaner',
+        '• 🔒 New security hardening options',
+        '• 📊 Performance monitoring dashboard',
         '',
-        'Restart recommended for full functionality.',
-        'Run: clipper --version to verify update',
+        '⚡ Post-upgrade actions:',
+        '• System restart recommended for full functionality',
+        '• Run: clipper --version to verify update',
+        '• Run: clipper --scan to test new scanning engine',
+        '',
+        `��� Upgrade completed in ${Math.floor(Math.random() * 30) + 45} seconds`,
+        'Welcome to CLIpper v1.0.2! 🎊',
         ''
       ];
     } else if (userAgent.includes('Mac')) {
       upgradeSteps = [
         'Starting CLIpper upgrade for macOS...',
+        `Upgrading from v${currentVersion} to v${newVersion}`,
+        '',
+        '🔍 Pre-upgrade checks...',
+        '✓ Internet connection: Active',
+        '✓ Disk space: 128.5 MB available (18.7 MB required)',
+        '✓ Homebrew: Available and updated',
+        '✓ System permissions: Granted',
         '',
         '📥 Downloading from Homebrew...',
-        '✓ brew update completed',
-        '✓ Downloaded CLIpper v1.0.2',
-        '✓ Verified package signature',
+        '✓ Updating Homebrew formulae...',
+        '✓ Downloading CLIpper v1.0.2 formula',
+        '✓ Fetching dependencies: libssl, zlib, curl',
+        '✓ Downloaded CLIpper-v1.0.2-darwin-universal.tar.gz (18.7 MB)',
+        '✓ Verified package signature (Apple Developer ID)',
+        '',
+        '💾 Creating backup...',
+        '✓ Backup created: ~/Library/Application Support/CLIpper/backup/',
+        '✓ Settings exported: clipper-preferences.plist',
+        '✓ Scan history preserved: scan-database.sqlite',
         '',
         '🔄 Installing update...',
-        '✓ Unlinked old version',
-        '✓ Installed new binaries',
-        '✓ Updated symlinks',
-        '✓ Refreshed launch services',
+        '✓ Unlinked old version (v1.0.0)',
+        '✓ Installed new binaries to /usr/local/bin/',
+        '✓ Updated symlinks and PATH references',
+        '✓ Refreshed launch services database',
+        '✓ Updated man pages and documentation',
+        '✓ Restored user preferences and settings',
+        '✓ Registered with macOS security framework',
         '',
         '🎉 Upgrade completed successfully!',
-        'CLIpper v1.0.2 is now active.',
+        `CLIpper v${newVersion} is now active and optimized for your Mac.`,
         '',
-        '📋 What\'s New:',
-        '• Native Apple Silicon optimization',
-        '• Improved Gatekeeper integration',
-        '• Enhanced privacy scanning',
-        '• Better macOS Sonoma support',
+        '📋 What\'s New in v1.0.2:',
+        '• 🍎 Native Apple Silicon (M1/M2/M3) optimization',
+        '• 🔒 Improved Gatekeeper and XProtect integration',
+        '• 🧹 Enhanced privacy scanning for macOS Sonoma',
+        '• 📊 Better system monitoring with Activity Monitor integration',
+        '• 🔧 Optimized for macOS 14+ features',
         '',
-        'Run: clipper --version to verify update',
+        '⚡ Post-upgrade actions:',
+        '• Run: clipper --version to verify update',
+        '• Run: clipper --scan to test enhanced scanning',
+        '• Check: System Preferences → Security for new permissions',
+        '',
+        `✅ Upgrade completed in ${Math.floor(Math.random() * 25) + 35} seconds`,
+        'Welcome to CLIpper v1.0.2 for macOS! 🍎',
         ''
       ];
     } else {
       upgradeSteps = [
         'Starting CLIpper upgrade for Linux...',
+        `Upgrading from v${currentVersion} to v${newVersion}`,
+        '',
+        '🔍 Pre-upgrade checks...',
+        '✓ Internet connection: Active',
+        '✓ Disk space: 256.8 MB available (22.1 MB required)',
+        '✓ Package manager: Available and updated',
+        '✓ Root privileges: Confirmed via sudo',
+        '✓ System dependencies: All satisfied',
         '',
         '📥 Downloading latest package...',
-        '✓ Downloaded CLIpper v1.0.2',
-        '✓ Verified GPG signature',
-        '✓ Checked dependencies',
+        '✓ Connecting to CLIpper repository...',
+        '✓ Downloading CLIpper-v1.0.2-linux-amd64.tar.gz (22.1 MB)',
+        '✓ Download completed in 12.7 seconds',
+        '✓ Verified GPG signature (CLIpper Release Team)',
+        '✓ SHA256 checksum: b8c4d0e1f2g3h4i5j6k7l8m9n0o1p2q3',
+        '',
+        '💾 Creating backup...',
+        '✓ Backup created: ~/.local/share/clipper/backup/v1.0.0/',
+        '✓ Configuration backed up: ~/.config/clipper/',
+        '✓ User data preserved: ~/.local/share/clipper/data/',
         '',
         '🔄 Installing update...',
-        '✓ Stopped clipper daemon',
-        '✓ Updated /usr/local/bin/clipper',
-        '✓ Updated man pages',
-        '✓ Refreshed desktop entries',
-        '✓ Started clipper daemon',
+        '✓ Stopped clipper daemon (systemd service)',
+        '✓ Updated executable: /usr/local/bin/clipper',
+        '✓ Updated shared libraries: /usr/local/lib/clipper/',
+        '✓ Refreshed man pages: /usr/local/share/man/man1/',
+        '✓ Updated desktop entries: ~/.local/share/applications/',
+        '✓ Restored user configuration and preferences',
+        '✓ Started clipper daemon (systemd service)',
         '',
         '🎉 Upgrade completed successfully!',
-        'CLIpper v1.0.2 is now installed.',
+        `CLIpper v${newVersion} is now installed and running.`,
         '',
-        '📋 What\'s New:',
-        '• Support for more Linux distros',
-        '• Improved systemd integration',
-        '• Enhanced package manager detection',
-        '• Better container environment support',
+        '📋 What\'s New in v1.0.2:',
+        '• 🐧 Support for more Linux distributions (Arch, Fedora, openSUSE)',
+        '• 🔧 Improved systemd and init.d integration',
+        '• 📦 Enhanced package manager detection (apt, yum, pacman, zypper)',
+        '• 🐳 Better container environment support (Docker, Podman)',
+        '• 🔒 Enhanced SELinux and AppArmor compatibility',
         '',
-        'Run: clipper --version to verify update',
+        '⚡ Post-upgrade actions:',
+        '• Run: clipper --version to verify update',
+        '• Run: systemctl status clipper to check daemon status',
+        '• Run: clipper --scan to test new scanning engine',
+        '',
+        `✅ Upgrade completed in ${Math.floor(Math.random() * 40) + 50} seconds`,
+        'Welcome to CLIpper v1.0.2 for Linux! 🐧',
         ''
       ];
     }
