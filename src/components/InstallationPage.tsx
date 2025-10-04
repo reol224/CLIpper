@@ -59,7 +59,7 @@ export default function InstallationPage() {
 
   const quickInstallCommands = {
     windows:
-      "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat | iex",
+      "curl -o clipper_windows.bat https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat",
     macos:
       "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
     linux:
@@ -90,7 +90,7 @@ export default function InstallationPage() {
       name: "Windows",
       icon: <Monitor className="w-5 h-5" />,
       installCommand:
-        "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat | iex",
+        "curl -o clipper_windows.bat https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat",
       runCommand: "clipper --help",
       requirements: ["PowerShell", "Administrator privileges", "Windows 10/11"],
       downloadUrl:
@@ -110,7 +110,7 @@ export default function InstallationPage() {
       name: "Linux",
       icon: <Terminal className="w-5 h-5" />,
       installCommand:
-        "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh | sudo bash",
+        "curl -o clipper_linux.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh",
       runCommand: "clipper --help",
       requirements: ["Terminal", "sudo privileges", "curl"],
       downloadUrl:
@@ -419,7 +419,9 @@ export default function InstallationPage() {
               <h4 className="text-white font-medium">
                 {detectedOS === "linux"
                   ? "Linux Script Commands:"
-                  : "Available Commands:"}
+                  : detectedOS === "windows"
+                    ? "Windows Script Commands:"
+                    : "Available Commands:"}
               </h4>
               <div className="text-sm text-gray-300 space-y-1">
                 {detectedOS === "linux" ? (
@@ -475,6 +477,69 @@ export default function InstallationPage() {
                     <div>
                       <code className="text-green-400">
                         ./clipper_linux.sh --version
+                      </code>{" "}
+                      - Show version
+                    </div>
+                  </>
+                ) : detectedOS === "windows" ? (
+                  <>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --scan
+                      </code>{" "}
+                      - Run comprehensive system scan
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --scan-quick
+                      </code>{" "}
+                      - Quick scan (basic info)
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --hardware
+                      </code>{" "}
+                      - Hardware info only
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --network
+                      </code>{" "}
+                      - Network info only
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --performance
+                      </code>{" "}
+                      - Performance metrics
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --security
+                      </code>{" "}
+                      - Security audit
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --clean
+                      </code>{" "}
+                      - Clean system files
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --export [FILE]
+                      </code>{" "}
+                      - Export to text file
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --help
+                      </code>{" "}
+                      - Show all commands
+                    </div>
+                    <div>
+                      <code className="text-green-400">
+                        clipper_windows.bat --version
                       </code>{" "}
                       - Show version
                     </div>
