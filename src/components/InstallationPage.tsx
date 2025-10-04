@@ -63,7 +63,7 @@ export default function InstallationPage() {
     macos:
       "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
     linux:
-      "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh | sudo bash",
+      "curl -o clipper_linux.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh",
   };
 
   const downloadLinks = {
