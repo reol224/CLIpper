@@ -86,6 +86,15 @@ export default function InstallationPage() {
           <h1 className="text-2xl font-bold">CLIpper</h1>
         </div>
         <p className="text-gray-300">Cross-platform system management and security tool</p>
+        <div className="mt-4">
+          <a 
+            href="/terminal" 
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-black rounded font-medium transition-colors"
+          >
+            <Terminal className="w-4 h-4" />
+            Launch Terminal Interface
+          </a>
+        </div>
       </div>
 
       {/* OS Detection */}
