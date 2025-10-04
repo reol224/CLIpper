@@ -116,15 +116,26 @@ install_macos() {
 install_linux() {
     echo -e "${BLUE}Installing CLIpper for Linux...${NC}"
     
-    # Download CLIpper
-    echo "Downloading CLIpper..."
-    DOWNLOAD_URL="${BASE_URL}/clipper-linux-${ARCH}.tar.gz"
-    curl -L "$DOWNLOAD_URL" -o /tmp/clipper.tar.gz
+    # Create installation directory
+    INSTALL_DIR="/usr/local/bin"
+    echo "Installing to $INSTALL_DIR..."
     
-    # Install to /usr/local/bin
-    echo "Installing to /usr/local/bin..."
-    tar -xzf /tmp/clipper.tar.gz -C /usr/local/bin
-    chmod +x /usr/local/bin/clipper
+    # For now, create a placeholder executable since the actual binary doesn't exist yet
+    cat > "$INSTALL_DIR/clipper" << 'EOF'
+#!/bin/bash
+echo "CLIpper v1.0.0 - Cross-platform System Management Tool"
+echo "Usage: clipper [command] [options]"
+echo ""
+echo "Commands:"
+echo "  scan      - Run system scans"
+echo "  optimize  - System optimization tools"
+echo "  security  - Security features"
+echo "  help      - Show this help message"
+echo ""
+echo "Note: This is a placeholder. Full functionality coming soon."
+EOF
+    
+    chmod +x "$INSTALL_DIR/clipper"
     
     # Create desktop entry
     DESKTOP_DIR="$HOME/.local/share/applications"
@@ -140,9 +151,6 @@ Terminal=true
 Type=Application
 Categories=System;Utility;
 EOF
-    
-    # Cleanup
-    rm -f /tmp/clipper.tar.gz
     
     echo -e "${GREEN}✅ CLIpper installed successfully!${NC}"
     echo -e "${YELLOW}Type: clipper --help${NC}"

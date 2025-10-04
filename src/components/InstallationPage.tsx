@@ -52,7 +52,7 @@ export default function InstallationPage() {
   const downloadLinks = {
     windows: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe",
     macos: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz", 
-    linux: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.tar.gz"
+    linux: "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.gz"
   };
 
   const copyToClipboard = async (text: string, commandType: string) => {
@@ -88,7 +88,7 @@ export default function InstallationPage() {
       installCommand: 'curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | sudo bash',
       runCommand: 'clipper --help',
       requirements: ['Terminal', 'sudo privileges', 'curl'],
-      downloadUrl: 'https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.tar.gz'
+      downloadUrl: 'https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.gz'
     }
   };
 
