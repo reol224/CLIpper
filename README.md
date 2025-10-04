@@ -63,8 +63,7 @@ A cross-platform desktop application with a Metasploit-like terminal interface t
 ## 🎯 Usage
 
 ### Available Routes
-- `/` - Home page with main terminal interface
-- `/install` - Installation guide with OS-specific instructions
+- `/` - Installation guide with OS-specific instructions
 
 ### CLI Commands (Simulated)
 ```bash
@@ -173,4 +172,4 @@ Need help? Run `clipper --help` for more options or check the installation guide
 
 ---
 
-Built with ❤️ using React, TypeScript, and Vite
+Built with ❤️
