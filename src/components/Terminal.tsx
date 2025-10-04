@@ -4,7 +4,7 @@ import CommandProcessor from './CommandProcessor';
 
 interface TerminalLine {
   id: number;
-  type: 'input' | 'output' | 'error';
+  type: 'input' | 'output' | 'error' | 'warning';
   content: string;
   timestamp: Date;
 }
@@ -36,7 +36,23 @@ export default function Terminal() {
     }
   }, [lines]);
 
-  const addLine = (content: string, type: 'input' | 'output' | 'error' = 'output') => {
+  // Check for updates on terminal load
+  useEffect(() => {
+    const checkUpdates = () => {
+      const hasUpdate = Math.random() > 0.6; // 40% chance of update
+      if (hasUpdate) {
+        setTimeout(() => {
+          addLine('🔄 Update available! CLIpper v1.0.2 is ready to install.', 'warning');
+          addLine('Run "clipper --update" for details or "clipper --upgrade" to update now.', 'warning');
+          addLine('', 'output');
+        }, 2000);
+      }
+    };
+    
+    checkUpdates();
+  }, []);
+
+  const addLine = (content: string, type: 'input' | 'output' | 'error' | 'warning' = 'output') => {
     const newLine: TerminalLine = {
       id: Date.now(),
       type,
@@ -59,9 +75,19 @@ export default function Terminal() {
     
     // Add result to terminal
     if (Array.isArray(result)) {
-      result.forEach(line => addLine(line, 'output'));
+      result.forEach(line => {
+        if (line.includes('🔄') || line.includes('Update available')) {
+          addLine(line, 'warning');
+        } else if (line.startsWith('Error:')) {
+          addLine(line, 'error');
+        } else {
+          addLine(line, 'output');
+        }
+      });
     } else {
-      addLine(result, result.startsWith('Error:') ? 'error' : 'output');
+      const lineType = result.startsWith('Error:') ? 'error' : 
+                      result.includes('🔄') || result.includes('Update') ? 'warning' : 'output';
+      addLine(result, lineType);
     }
   };
 
@@ -98,6 +124,7 @@ export default function Terminal() {
     switch (type) {
       case 'input': return 'text-cyan-400';
       case 'error': return 'text-red-400';
+      case 'warning': return 'text-yellow-400';
       default: return 'text-green-400';
     }
   };
@@ -106,9 +133,14 @@ export default function Terminal() {
     <div className="min-h-screen bg-black text-green-400 font-mono">
       {/* Header */}
       <div className="border-b border-green-500 p-4">
-        <div className="flex items-center gap-2">
-          <TerminalIcon className="w-5 h-5" />
-          <span className="text-white font-bold">CLIpper Terminal</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TerminalIcon className="w-5 h-5" />
+            <span className="text-white font-bold">CLIpper Terminal</span>
+          </div>
+          <div className="text-sm text-gray-400">
+            v1.0.0 | Type "update" to check for updates
+          </div>
         </div>
       </div>
 
