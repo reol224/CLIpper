@@ -416,24 +416,56 @@ export default function InstallationPage() {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-white font-medium">Available Commands:</h4>
+              <h4 className="text-white font-medium">
+                {detectedOS === 'linux' ? 'Linux Script Commands:' : 'Available Commands:'}
+              </h4>
               <div className="text-sm text-gray-300 space-y-1">
-                <div>
-                  <code className="text-green-400">--scan</code> - Run system
-                  scan
-                </div>
-                <div>
-                  <code className="text-green-400">--optimize</code> - Optimize
-                  system
-                </div>
-                <div>
-                  <code className="text-green-400">--security</code> - Security
-                  check
-                </div>
-                <div>
-                  <code className="text-green-400">--help</code> - Show all
-                  commands
-                </div>
+                {detectedOS === 'linux' ? (
+                  <>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --scan</code> - Run comprehensive system scan
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --scan-quick</code> - Quick scan (basic info)
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --hardware</code> - Hardware info only
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --network</code> - Network info only
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --performance</code> - Performance metrics
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --clean</code> - Clean system files
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --export [FILE]</code> - Export to JSON
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --help</code> - Show all commands
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --version</code> - Show version
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <code className="text-green-400">clipper --scan</code> - Run system scan
+                    </div>
+                    <div>
+                      <code className="text-green-400">clipper --optimize</code> - Optimize system
+                    </div>
+                    <div>
+                      <code className="text-green-400">clipper --security</code> - Security audit
+                    </div>
+                    <div>
+                      <code className="text-green-400">clipper --help</code> - Show all commands
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
