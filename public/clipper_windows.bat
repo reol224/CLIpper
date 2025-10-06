@@ -670,16 +670,13 @@ echo.
 echo Updating script...
 echo.
 
-:: Update VERSION in the downloaded script
-powershell -Command "(Get-Content '%TEMP_SCRIPT%') -replace 'set \"VERSION=.*\"', 'set \"VERSION=%REMOTE_VERSION%\"' | Set-Content '%TEMP_SCRIPT%'" >nul 2>&1
-
 :: Replace current script
 copy /Y "%TEMP_SCRIPT%" "%~f0" >nul 2>&1
 if %errorLevel% equ 0 (
     echo Updated script: %~f0
     echo.
     echo Update completed successfully!
-    echo Version %VERSION% → %REMOTE_VERSION%
+    echo Version %VERSION% - %REMOTE_VERSION%
     echo.
     echo Please restart the script to use the new version.
     echo.
@@ -715,7 +712,7 @@ set "CHECK_VERSION=%CHECK_VERSION:"=%"
 
 if not "%VERSION%"=="%CHECK_VERSION%" (
     if not "%CHECK_VERSION%"=="" (
-        echo Update available: v%VERSION% → v%CHECK_VERSION%
+        echo Update available: v%VERSION% - v%CHECK_VERSION%
         echo   Run: %~nx0 --update to update
         echo.
     )
