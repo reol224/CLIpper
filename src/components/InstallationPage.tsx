@@ -61,7 +61,7 @@ export default function InstallationPage() {
     windows:
       "curl -o clipper_windows.bat https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat",
     macos:
-      "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
+      "curl -o clipper_macos.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_macos.sh",
     linux:
       "curl -o clipper_linux.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh",
   };
@@ -70,7 +70,7 @@ export default function InstallationPage() {
     windows:
       "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat",
     macos:
-      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz",
+      "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_macos.sh",
     linux:
       "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh",
   };
@@ -100,11 +100,11 @@ export default function InstallationPage() {
       name: "macOS",
       icon: <HardDrive className="w-5 h-5" />,
       installCommand:
-        "curl -fsSL https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/install.sh | bash",
+        "curl -o clipper_macos.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_macos.sh",
       runCommand: "clipper --help",
       requirements: ["Terminal", "macOS 10.15+", "curl"],
       downloadUrl:
-        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper-macos.tar.gz",
+        "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_macos.sh",
     },
     linux: {
       name: "Linux",
