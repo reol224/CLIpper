@@ -630,7 +630,7 @@ if %errorLevel% neq 0 (
 )
 
 :: Extract version from downloaded script
-for /f "tokens=2 delims==" %%A in ('findstr /B "set ""VERSION=" "%TEMP_SCRIPT%"') do (
+for /f "tokens=2 delims==" %%A in ('findstr /B "set \"VERSION=" "%TEMP_SCRIPT%"') do (
     set "REMOTE_VERSION=%%A"
 )
 set "REMOTE_VERSION=%REMOTE_VERSION:"=%"
@@ -705,7 +705,7 @@ if %errorLevel% neq 0 (
     goto :eof
 )
 
-for /f "tokens=2 delims==" %%A in ('findstr /B "set ""VERSION=" "%TEMP_CHECK%"') do (
+for /f "tokens=2 delims==" %%A in ('findstr /B "set \"VERSION=" "%TEMP_CHECK%"') do (
     set "CHECK_VERSION=%%A"
 )
 set "CHECK_VERSION=%CHECK_VERSION:"=%"
@@ -727,7 +727,7 @@ cls
 echo.
 echo ╔════════════════════════════════════════════════════╗
 echo ║           CLIpper v%VERSION%                    ║
-echo ╚════════════════════════════════════════════════════╝
+echo ╚═════════════════════════════���══════════════════════╝
 echo.
 echo SYSTEM INFORMATION:
 echo   1) Full System Scan
