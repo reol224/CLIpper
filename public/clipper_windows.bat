@@ -1,11 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Windows System Scanner
+:: CLIpper - Windows System Scanner
 :: Collects comprehensive system information
 
 set "VERSION=1.0.0"
-set "SCRIPT_NAME=Windows System Scanner"
+set "SCRIPT_NAME=CLIpper"
+set "GITHUB_RAW_URL=https://raw.githubusercontent.com/reol224/CLIpper/main/public/clipper_windows.bat"
 
 :: Check for admin privileges
 net session >nul 2>&1
@@ -16,7 +17,7 @@ if %errorLevel% == 0 (
 )
 
 :: Parse command line arguments
-if "%1"=="" goto show_usage
+if "%1"=="" goto auto_check_and_menu
 if /I "%1"=="--scan" goto full_scan
 if /I "%1"=="--scan-quick" goto quick_scan
 if /I "%1"=="--hardware" goto hardware_info
@@ -24,6 +25,10 @@ if /I "%1"=="--network" goto network_info
 if /I "%1"=="--performance" goto performance_info
 if /I "%1"=="--security" goto security_audit
 if /I "%1"=="--clean" goto clean_system
+if /I "%1"=="--update" goto check_updates
+if /I "%1"=="--menu" goto show_menu
+if /I "%1"=="--install" goto install_script
+if /I "%1"=="--uninstall" goto uninstall_script
 if /I "%1"=="--export" goto export_json
 if /I "%1"=="--help" goto show_usage
 if /I "%1"=="-h" goto show_usage
@@ -31,8 +36,13 @@ if /I "%1"=="--version" goto show_version
 if /I "%1"=="-v" goto show_version
 goto show_usage
 
+:auto_check_and_menu
+call :auto_update_check
+goto show_menu
+
 :show_version
 echo %SCRIPT_NAME% v%VERSION%
+echo GitHub: https://github.com/reol224/CLIpper
 goto end
 
 :show_usage
@@ -58,6 +68,10 @@ echo    --security          Run security audit
 echo.
 echo MAINTENANCE OPTIONS:
 echo    --clean             Clean system (cache, temp files, logs)
+echo    --update            Check for updates and update script
+echo    --menu              Show interactive menu
+echo    --install           Install system-wide (requires Administrator)
+echo    --uninstall         Uninstall from system (requires Administrator)
 echo    --export [FILE]     Export scan results to text file
 echo.
 echo INFORMATION OPTIONS:
@@ -70,6 +84,7 @@ echo    %~nx0 --scan-quick              # Quick overview
 echo    %~nx0 --hardware                # Hardware info only
 echo    %~nx0 --security                # Security audit
 echo    %~nx0 --clean                   # System cleanup
+echo    %~nx0 --update                  # Check for updates
 echo.
 echo NOTES:
 echo    - Some operations require Administrator privileges
@@ -92,6 +107,7 @@ echo.
 goto :eof
 
 :full_scan
+call :auto_update_check
 call :print_header "STARTING COMPLETE SYSTEM SCAN"
 call :os_info
 call :architecture_info
@@ -369,83 +385,172 @@ goto end
 :clean_system
 call :print_header "SYSTEM CLEANUP"
 
-echo [33mWARNING: This will clean temporary files and caches[0m
+echo [33mThis will help you clean temporary files and caches[0m
+echo [33mYou will be asked before each cleanup operation[0m
 echo.
-set /p confirm="Do you want to continue? (Y/N): "
-if /I not "%confirm%"=="Y" goto end
 
-echo.
-echo [36mCleaning Windows Temp files...[0m
-del /s /q %TEMP%\*.* >nul 2>&1
-del /s /q %WINDIR%\Temp\*.* >nul 2>&1
-echo [32m- Temp files cleaned[0m
-
-echo.
-echo [36mCleaning Recycle Bin...[0m
-if %IS_ADMIN%==1 (
-    rd /s /q C:\$Recycle.Bin >nul 2>&1
-    echo [32m- Recycle Bin emptied[0m
+:: 1. Windows Temp files
+echo [36mWindows Temp Files:[0m
+for /f %%A in ('dir /b /s %TEMP% 2^>nul ^| find /c /v ""') do set temp_count=%%A
+echo   User Temp: %TEMP%
+echo   Files found: %temp_count%
+set /p clean_temp="Clean Windows Temp files? (Y/N): "
+if /I "%clean_temp%"=="Y" (
+    del /s /q %TEMP%\*.* >nul 2>&1
+    del /s /q %WINDIR%\Temp\*.* >nul 2>&1
+    echo   [32m- Temp files cleaned[0m
 ) else (
-    echo [33m! Requires Administrator privileges[0m
+    echo   [33m- Skipped[0m
 )
 
+:: 2. Recycle Bin
 echo.
-echo [36mCleaning Windows Update Cache...[0m
+echo [36mRecycle Bin:[0m
 if %IS_ADMIN%==1 (
-    net stop wuauserv >nul 2>&1
-    del /s /q %WINDIR%\SoftwareDistribution\Download\*.* >nul 2>&1
-    net start wuauserv >nul 2>&1
-    echo [32m- Windows Update cache cleaned[0m
+    set /p clean_recycle="Empty Recycle Bin? (Y/N): "
+    if /I "!clean_recycle!"=="Y" (
+        rd /s /q C:\$Recycle.Bin >nul 2>&1
+        echo   [32m- Recycle Bin emptied[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
 ) else (
-    echo [33m! Requires Administrator privileges[0m
+    echo   [33m! Requires Administrator privileges[0m
 )
 
+:: 3. Windows Update Cache
 echo.
-echo [36mCleaning Prefetch...[0m
+echo [36mWindows Update Cache:[0m
 if %IS_ADMIN%==1 (
-    del /s /q %WINDIR%\Prefetch\*.* >nul 2>&1
-    echo [32m- Prefetch cleaned[0m
+    if exist "%WINDIR%\SoftwareDistribution\Download" (
+        for /f %%A in ('dir /b /s "%WINDIR%\SoftwareDistribution\Download" 2^>nul ^| find /c /v ""') do set update_count=%%A
+        echo   Location: %WINDIR%\SoftwareDistribution\Download
+        echo   Files found: !update_count!
+    )
+    set /p clean_update="Clean Windows Update cache? (Y/N): "
+    if /I "!clean_update!"=="Y" (
+        net stop wuauserv >nul 2>&1
+        del /s /q %WINDIR%\SoftwareDistribution\Download\*.* >nul 2>&1
+        net start wuauserv >nul 2>&1
+        echo   [32m- Windows Update cache cleaned[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
 ) else (
-    echo [33m! Requires Administrator privileges[0m
+    echo   [33m! Requires Administrator privileges[0m
 )
 
+:: 4. Prefetch
 echo.
-echo [36mCleaning DNS Cache...[0m
-ipconfig /flushdns >nul 2>&1
-echo [32m- DNS cache flushed[0m
+echo [36mPrefetch Files:[0m
+if %IS_ADMIN%==1 (
+    if exist "%WINDIR%\Prefetch" (
+        for /f %%A in ('dir /b "%WINDIR%\Prefetch\*.pf" 2^>nul ^| find /c /v ""') do set prefetch_count=%%A
+        echo   Location: %WINDIR%\Prefetch
+        echo   Files found: !prefetch_count!
+    )
+    set /p clean_prefetch="Clean Prefetch files? (Y/N): "
+    if /I "!clean_prefetch!"=="Y" (
+        del /s /q %WINDIR%\Prefetch\*.* >nul 2>&1
+        echo   [32m- Prefetch cleaned[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
+) else (
+    echo   [33m! Requires Administrator privileges[0m
+)
 
+:: 5. DNS Cache
 echo.
-echo [36mCleaning Browser Caches...[0m
+echo [36mDNS Cache:[0m
+set /p clean_dns="Flush DNS cache? (Y/N): "
+if /I "%clean_dns%"=="Y" (
+    ipconfig /flushdns >nul 2>&1
+    echo   [32m- DNS cache flushed[0m
+) else (
+    echo   [33m- Skipped[0m
+)
+
+:: 6. Browser Caches
+echo.
+echo [36mBrowser Caches:[0m
+
 :: Chrome
 if exist "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache" (
-    rd /s /q "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache" >nul 2>&1
-    echo [32m- Chrome cache cleaned[0m
-)
-:: Edge
-if exist "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache" (
-    rd /s /q "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache" >nul 2>&1
-    echo [32m- Edge cache cleaned[0m
-)
-:: Firefox
-if exist "%LOCALAPPDATA%\Mozilla\Firefox\Profiles" (
-    for /d %%i in ("%LOCALAPPDATA%\Mozilla\Firefox\Profiles\*") do (
-        rd /s /q "%%i\cache2" >nul 2>&1
+    for /f %%A in ('dir /b /s "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache" 2^>nul ^| find /c /v ""') do set chrome_count=%%A
+    echo   Chrome cache files: !chrome_count!
+    set /p clean_chrome="Clean Chrome cache? (Y/N): "
+    if /I "!clean_chrome!"=="Y" (
+        taskkill /F /IM chrome.exe >nul 2>&1
+        rd /s /q "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache" >nul 2>&1
+        echo   [32m- Chrome cache cleaned[0m
+    ) else (
+        echo   [33m- Skipped[0m
     )
-    echo [32m- Firefox cache cleaned[0m
 )
 
+:: Edge
+if exist "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache" (
+    for /f %%A in ('dir /b /s "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache" 2^>nul ^| find /c /v ""') do set edge_count=%%A
+    echo   Edge cache files: !edge_count!
+    set /p clean_edge="Clean Edge cache? (Y/N): "
+    if /I "!clean_edge!"=="Y" (
+        taskkill /F /IM msedge.exe >nul 2>&1
+        rd /s /q "%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache" >nul 2>&1
+        echo   [32m- Edge cache cleaned[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
+)
+
+:: Firefox
+if exist "%LOCALAPPDATA%\Mozilla\Firefox\Profiles" (
+    echo   Firefox profiles found
+    set /p clean_firefox="Clean Firefox cache? (Y/N): "
+    if /I "!clean_firefox!"=="Y" (
+        taskkill /F /IM firefox.exe >nul 2>&1
+        for /d %%i in ("%LOCALAPPDATA%\Mozilla\Firefox\Profiles\*") do (
+            rd /s /q "%%i\cache2" >nul 2>&1
+        )
+        echo   [32m- Firefox cache cleaned[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
+)
+
+:: 7. Thumbnail Cache
 echo.
-echo [36mRunning Disk Cleanup...[0m
+echo [36mThumbnail Cache:[0m
+if exist "%LOCALAPPDATA%\Microsoft\Windows\Explorer" (
+    for /f %%A in ('dir /b "%LOCALAPPDATA%\Microsoft\Windows\Explorer\thumbcache_*.db" 2^>nul ^| find /c /v ""') do set thumb_count=%%A
+    echo   Thumbnail cache files: !thumb_count!
+    set /p clean_thumbs="Clean thumbnail cache? (Y/N): "
+    if /I "!clean_thumbs!"=="Y" (
+        del /f /q "%LOCALAPPDATA%\Microsoft\Windows\Explorer\thumbcache_*.db" >nul 2>&1
+        echo   [32m- Thumbnail cache cleaned[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
+)
+
+:: 8. Disk Cleanup
+echo.
+echo [36mWindows Disk Cleanup:[0m
 if %IS_ADMIN%==1 (
-    cleanmgr /sagerun:1 >nul 2>&1
-    echo [32m- Disk cleanup initiated[0m
+    set /p run_cleanmgr="Run Windows Disk Cleanup utility? (Y/N): "
+    if /I "!run_cleanmgr!"=="Y" (
+        cleanmgr /sagerun:1 >nul 2>&1
+        echo   [32m- Disk cleanup initiated[0m
+    ) else (
+        echo   [33m- Skipped[0m
+    )
 ) else (
-    echo [33m! Requires Administrator privileges[0m
+    echo   [33m! Requires Administrator privileges[0m
 )
 
 echo.
 echo [32m===============================================================================[0m
-echo [32m Cleanup Complete![0m
+echo [32m Cleanup Process Complete![0m
 echo [32m===============================================================================[0m
 echo.
 goto end
@@ -474,6 +579,317 @@ call :network_details
 ) > "%output_file%"
 
 echo [32mExport complete: %output_file%[0m
+echo.
+goto end
+
+:: Check for updates
+:check_updates
+echo.
+echo ===============================================================================
+echo  CHECKING FOR UPDATES
+echo ===============================================================================
+echo.
+
+echo [36mCurrent version: [1m%VERSION%[0m
+echo [36mChecking GitHub repository...[0m
+echo.
+
+:: Check if PowerShell is available
+where powershell >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [31mError: PowerShell is required to check for updates[0m
+    goto end
+)
+
+:: Download latest script to temp location
+set "TEMP_SCRIPT=%TEMP%\clipper_windows_temp.bat"
+
+echo [36mDownloading latest version...[0m
+powershell -Command "try { Invoke-WebRequest -Uri '%GITHUB_RAW_URL%' -OutFile '%TEMP_SCRIPT%' -UseBasicParsing } catch { exit 1 }" >nul 2>&1
+
+if %errorLevel% neq 0 (
+    echo [31mError: Failed to download script from GitHub[0m
+    echo Please check your internet connection and try again
+    goto end
+)
+
+:: Extract version from downloaded script
+for /f "tokens=2 delims==" %%A in ('findstr /B "set \"VERSION=" "%TEMP_SCRIPT%"') do (
+    set "REMOTE_VERSION=%%A"
+)
+set "REMOTE_VERSION=%REMOTE_VERSION:"=%"
+
+if "%REMOTE_VERSION%"=="" (
+    echo [31mError: Could not determine remote version[0m
+    del "%TEMP_SCRIPT%" >nul 2>&1
+    goto end
+)
+
+echo [36mLatest version: [1m%REMOTE_VERSION%[0m
+echo.
+
+:: Compare versions
+if "%VERSION%"=="%REMOTE_VERSION%" (
+    echo [32m✓ You are running the latest version![0m
+    echo.
+    del "%TEMP_SCRIPT%" >nul 2>&1
+    goto end
+)
+
+echo [33m⚠ A new version is available![0m
+echo   Current: %VERSION%
+echo   Latest:  %REMOTE_VERSION%
+echo.
+
+set /p update_confirm="Would you like to update now? (Y/N): "
+if /I not "%update_confirm%"=="Y" (
+    echo [33mUpdate cancelled[0m
+    echo.
+    del "%TEMP_SCRIPT%" >nul 2>&1
+    goto end
+)
+
+:: Perform update
+echo.
+echo [36mUpdating script...[0m
+echo.
+
+:: Update VERSION in the downloaded script
+powershell -Command "(Get-Content '%TEMP_SCRIPT%') -replace 'set \"VERSION=.*\"', 'set \"VERSION=%REMOTE_VERSION%\"' | Set-Content '%TEMP_SCRIPT%'" >nul 2>&1
+
+:: Replace current script
+copy /Y "%TEMP_SCRIPT%" "%~f0" >nul 2>&1
+if %errorLevel% equ 0 (
+    echo [32m✓ Updated script: %~f0[0m
+    echo.
+    echo [1m[32m✓ Update completed successfully![0m[0m
+    echo [36mVersion %VERSION% → %REMOTE_VERSION%[0m
+    echo.
+    echo Please restart the script to use the new version.
+    echo.
+) else (
+    echo [31mError: Failed to update script[0m
+    echo You may need to run as Administrator
+    echo.
+)
+
+del "%TEMP_SCRIPT%" >nul 2>&1
+goto end
+
+:: Auto-update check (silent)
+:auto_update_check
+where powershell >nul 2>&1
+if %errorLevel% neq 0 goto :eof
+
+ping -n 1 -w 1000 8.8.8.8 >nul 2>&1
+if %errorLevel% neq 0 goto :eof
+
+set "TEMP_CHECK=%TEMP%\clipper_check.bat"
+powershell -Command "try { Invoke-WebRequest -Uri '%GITHUB_RAW_URL%' -OutFile '%TEMP_CHECK%' -UseBasicParsing -TimeoutSec 3 } catch { exit 1 }" >nul 2>&1
+
+if %errorLevel% neq 0 (
+    del "%TEMP_CHECK%" >nul 2>&1
+    goto :eof
+)
+
+for /f "tokens=2 delims==" %%A in ('findstr /B "set \"VERSION=" "%TEMP_CHECK%"') do (
+    set "CHECK_VERSION=%%A"
+)
+set "CHECK_VERSION=%CHECK_VERSION:"=%"
+
+if not "%VERSION%"=="%CHECK_VERSION%" (
+    if not "%CHECK_VERSION%"=="" (
+        echo [33m⚠ Update available: v%VERSION% → v%CHECK_VERSION%[0m
+        echo   Run: [36m%~nx0 --update[0m to update
+        echo.
+    )
+)
+
+del "%TEMP_CHECK%" >nul 2>&1
+goto :eof
+
+:: Interactive Menu
+:show_menu
+cls
+echo.
+echo [1m[34m╔════════════════════════════════════════════════════╗[0m
+echo [1m[34m║[0m           [1m[36mCLIpper[0m [1m[34mv%VERSION%[0m                    [1m[34m║[0m
+echo [1m[34m╚════════════════════════════════════════════════════╝[0m
+echo.
+echo [1mSYSTEM INFORMATION:[0m
+echo   [32m1)[0m Full System Scan
+echo   [32m2)[0m Quick Scan
+echo   [32m3)[0m Hardware Info Only
+echo   [32m4)[0m Network Info Only
+echo   [32m5)[0m Performance Metrics
+echo.
+echo [1mMAINTENANCE:[0m
+echo   [33m6)[0m Clean System (Cache ^& Temp Files)
+echo   [33m7)[0m Security Audit
+echo   [33m8)[0m Export Scan to File
+echo.
+echo [1mOTHER:[0m
+echo   [36m9)[0m Check for Updates
+echo   [36m10)[0m About / Help
+echo   [31m11)[0m Exit
+echo.
+set /p menu_choice="[1mSelect an option [1-11]:[0m "
+
+if "%menu_choice%"=="1" (
+    cls
+    call :full_scan
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="2" (
+    cls
+    call :quick_scan
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="3" (
+    cls
+    call :hardware_info
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="4" (
+    cls
+    call :network_details
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="5" (
+    cls
+    call :performance_details
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="6" (
+    cls
+    call :clean_system
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="7" (
+    cls
+    call :security_audit
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="8" (
+    cls
+    set /p export_file="Enter filename (or press Enter for default): "
+    call :export_json !export_file!
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="9" (
+    cls
+    call :check_updates
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="10" (
+    cls
+    call :show_usage
+    pause
+    goto show_menu
+)
+if "%menu_choice%"=="11" (
+    echo.
+    echo [32mThanks for using CLIpper![0m
+    echo.
+    goto end
+)
+echo [31mInvalid option. Please try again.[0m
+timeout /t 2 >nul
+goto show_menu
+
+:: Install script
+:install_script
+echo.
+echo ===============================================================================
+echo  INSTALLING CLIpper
+echo ===============================================================================
+echo.
+
+if %IS_ADMIN%==0 (
+    echo [31mError: Installation requires Administrator privileges[0m
+    echo Please run this script as Administrator
+    goto end
+)
+
+set "INSTALL_DIR=%ProgramFiles%\CLIpper"
+set "INSTALL_FILE=%INSTALL_DIR%\clipper.bat"
+
+if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+
+copy /Y "%~f0" "%INSTALL_FILE%" >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [31mError: Failed to copy script[0m
+    goto end
+)
+
+:: Add to PATH
+set "PATH_CHECK="
+for /f "tokens=2*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do set "PATH_CHECK=%%B"
+
+echo %PATH_CHECK% | find /I "%INSTALL_DIR%" >nul
+if %errorLevel% neq 0 (
+    setx /M PATH "%PATH_CHECK%;%INSTALL_DIR%" >nul 2>&1
+    echo [32m✓ Added to system PATH[0m
+)
+
+echo [32m✓ Installed to: %INSTALL_FILE%[0m
+echo [32m✓ You can now run: clipper[0m
+echo.
+echo Available commands:
+echo   [36mclipper --scan[0m        - Full system scan
+echo   [36mclipper --clean[0m       - Clean system
+echo   [36mclipper --security[0m    - Security audit
+echo   [36mclipper --update[0m      - Check for updates
+echo   [36mclipper --menu[0m        - Interactive menu
+echo   [36mclipper --help[0m        - Show help
+echo.
+echo [33mNote: You may need to restart your terminal for PATH changes to take effect[0m
+echo.
+goto end
+
+:: Uninstall script
+:uninstall_script
+echo.
+echo ===============================================================================
+echo  UNINSTALLING CLIpper
+echo ===============================================================================
+echo.
+
+if %IS_ADMIN%==0 (
+    echo [31mError: Uninstallation requires Administrator privileges[0m
+    goto end
+)
+
+set "INSTALL_DIR=%ProgramFiles%\CLIpper"
+
+if exist "%INSTALL_DIR%" (
+    rd /s /q "%INSTALL_DIR%"
+    echo [32m✓ CLIpper uninstalled[0m
+) else (
+    echo [33mCLIpper is not installed[0m
+)
+
+:: Remove from PATH (optional)
+echo.
+set /p remove_path="Remove from system PATH? (Y/N): "
+if /I "%remove_path%"=="Y" (
+    for /f "tokens=2*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do (
+        set "CURRENT_PATH=%%B"
+    )
+    set "NEW_PATH=!CURRENT_PATH:%INSTALL_DIR%;=!"
+    setx /M PATH "!NEW_PATH!" >nul 2>&1
+    echo [32m✓ Removed from PATH[0m
+)
+
 echo.
 goto end
 

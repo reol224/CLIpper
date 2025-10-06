@@ -1,11 +1,13 @@
 #!/bin/bash
 
-# Linux System Scanner
+# CLIpper - Linux System Scanner
 # Collects comprehensive system information
 
 VERSION="1.0.0"
-SCRIPT_NAME="system-scanner"
-INSTALL_PATH="/usr/local/bin/sysmon"
+SCRIPT_NAME="CLIpper"
+INSTALL_PATH="/usr/local/bin/clipper"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/reol224/CLIpper/main/public/clipper_linux.sh"
+GITHUB_API_URL="https://api.github.com/repos/reol224/CLIpper/commits?path=public/clipper_linux.sh&per_page=1"
 
 # Color codes
 RED='\033[0;31m'
@@ -332,16 +334,19 @@ clean_system() {
     fi
     
     # 1. Package manager cache
-    echo -e "${CYAN}Cleaning package manager cache...${NC}"
+    echo -e "${CYAN}Package Manager Cache:${NC}"
     if command_exists apt-get; then
         if [ "$requires_sudo" = true ]; then
-            echo "  → apt cache (requires sudo): sudo apt-get clean && sudo apt-get autoclean"
-            read -p "  Run apt cleanup? [y/N]: " -n 1 -r
+            cache_size=$(du -sh /var/cache/apt/archives 2>/dev/null | awk '{print $1}')
+            echo "  APT cache size: $cache_size"
+            read -p "  Clean APT cache? (requires sudo) [y/N]: " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 sudo apt-get clean
                 sudo apt-get autoclean
                 echo -e "  ${GREEN}✓ APT cache cleaned${NC}"
+            else
+                echo -e "  ${YELLOW}✗ Skipped${NC}"
             fi
         else
             apt-get clean
@@ -349,186 +354,398 @@ clean_system() {
             echo -e "  ${GREEN}✓ APT cache cleaned${NC}"
         fi
     elif command_exists dnf; then
-        if [ "$requires_sudo" = true ]; then
-            sudo dnf clean all
+        cache_size=$(du -sh /var/cache/dnf 2>/dev/null | awk '{print $1}')
+        echo "  DNF cache size: $cache_size"
+        read -p "  Clean DNF cache? [y/N]: " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ "$requires_sudo" = true ]; then
+                sudo dnf clean all
+            else
+                dnf clean all
+            fi
+            echo -e "  ${GREEN}✓ DNF cache cleaned${NC}"
         else
-            dnf clean all
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
-        echo -e "  ${GREEN}✓ DNF cache cleaned${NC}"
     elif command_exists yum; then
-        if [ "$requires_sudo" = true ]; then
-            sudo yum clean all
+        cache_size=$(du -sh /var/cache/yum 2>/dev/null | awk '{print $1}')
+        echo "  YUM cache size: $cache_size"
+        read -p "  Clean YUM cache? [y/N]: " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ "$requires_sudo" = true ]; then
+                sudo yum clean all
+            else
+                yum clean all
+            fi
+            echo -e "  ${GREEN}✓ YUM cache cleaned${NC}"
         else
-            yum clean all
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
-        echo -e "  ${GREEN}✓ YUM cache cleaned${NC}"
     elif command_exists pacman; then
-        if [ "$requires_sudo" = true ]; then
-            sudo pacman -Sc --noconfirm
+        cache_size=$(du -sh /var/cache/pacman/pkg 2>/dev/null | awk '{print $1}')
+        echo "  Pacman cache size: $cache_size"
+        read -p "  Clean Pacman cache? [y/N]: " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ "$requires_sudo" = true ]; then
+                sudo pacman -Sc --noconfirm
+            else
+                pacman -Sc --noconfirm
+            fi
+            echo -e "  ${GREEN}✓ Pacman cache cleaned${NC}"
         else
-            pacman -Sc --noconfirm
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
-        echo -e "  ${GREEN}✓ Pacman cache cleaned${NC}"
     fi
     
     # 2. User cache
-    echo -e "\n${CYAN}Cleaning user cache...${NC}"
+    echo -e "\n${CYAN}User Cache:${NC}"
     if [ -d "$HOME/.cache" ]; then
         cache_size=$(du -sh "$HOME/.cache" 2>/dev/null | awk '{print $1}')
-        echo "  Current cache size: $cache_size"
-        read -p "  Clean user cache ($HOME/.cache)? [y/N]: " -n 1 -r
+        file_count=$(find "$HOME/.cache" -type f 2>/dev/null | wc -l)
+        echo "  Location: $HOME/.cache"
+        echo "  Size: $cache_size"
+        echo "  Files: $file_count"
+        read -p "  Clean user cache? [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             rm -rf "$HOME/.cache/"*
             echo -e "  ${GREEN}✓ User cache cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
+    else
+        echo "  No cache directory found"
     fi
     
     # 3. Temporary files
-    echo -e "\n${CYAN}Cleaning temporary files...${NC}"
+    echo -e "\n${CYAN}Temporary Files:${NC}"
     if [ -d /tmp ]; then
         tmp_size=$(du -sh /tmp 2>/dev/null | awk '{print $1}')
-        echo "  /tmp size: $tmp_size"
-        if [ "$requires_sudo" = true ]; then
-            read -p "  Clean /tmp? (requires sudo) [y/N]: " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
+        tmp_count=$(find /tmp -type f 2>/dev/null | wc -l)
+        echo "  Location: /tmp"
+        echo "  Size: $tmp_size"
+        echo "  Files: $tmp_count"
+        read -p "  Clean old temp files (7+ days)? [y/N]: " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ "$requires_sudo" = true ]; then
                 sudo find /tmp -type f -atime +7 -delete 2>/dev/null
-                echo -e "  ${GREEN}✓ Old temp files cleaned${NC}"
+            else
+                find /tmp -type f -atime +7 -delete 2>/dev/null
             fi
-        else
-            find /tmp -type f -atime +7 -delete 2>/dev/null
             echo -e "  ${GREEN}✓ Old temp files cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
     fi
     
     # 4. Journal logs
-    echo -e "\n${CYAN}Cleaning system logs...${NC}"
+    echo -e "\n${CYAN}System Logs (Journal):${NC}"
     if command_exists journalctl; then
         journal_size=$(journalctl --disk-usage 2>/dev/null | grep -oP '\d+\.\d+[GM]' | head -1)
         echo "  Journal size: $journal_size"
-        if [ "$requires_sudo" = true ]; then
-            read -p "  Clean journal logs older than 7 days? (requires sudo) [y/N]: " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
+        read -p "  Clean journal logs older than 7 days? [y/N]: " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ "$requires_sudo" = true ]; then
                 sudo journalctl --vacuum-time=7d
-                echo -e "  ${GREEN}✓ Journal logs cleaned${NC}"
+            else
+                journalctl --vacuum-time=7d
             fi
-        else
-            journalctl --vacuum-time=7d
             echo -e "  ${GREEN}✓ Journal logs cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
+    else
+        echo "  journalctl not available"
     fi
     
     # 5. Thumbnail cache
-    echo -e "\n${CYAN}Cleaning thumbnail cache...${NC}"
+    echo -e "\n${CYAN}Thumbnail Cache:${NC}"
+    local thumb_found=false
     if [ -d "$HOME/.thumbnails" ]; then
         thumb_size=$(du -sh "$HOME/.thumbnails" 2>/dev/null | awk '{print $1}')
-        echo "  Thumbnail cache size: $thumb_size"
+        thumb_count=$(find "$HOME/.thumbnails" -type f 2>/dev/null | wc -l)
+        echo "  Location: $HOME/.thumbnails"
+        echo "  Size: $thumb_size"
+        echo "  Files: $thumb_count"
         read -p "  Clean thumbnail cache? [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             rm -rf "$HOME/.thumbnails/"*
             echo -e "  ${GREEN}✓ Thumbnail cache cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
+        thumb_found=true
     fi
     
     if [ -d "$HOME/.cache/thumbnails" ]; then
         thumb_size=$(du -sh "$HOME/.cache/thumbnails" 2>/dev/null | awk '{print $1}')
-        echo "  Thumbnail cache size: $thumb_size"
+        thumb_count=$(find "$HOME/.cache/thumbnails" -type f 2>/dev/null | wc -l)
+        echo "  Location: $HOME/.cache/thumbnails"
+        echo "  Size: $thumb_size"
+        echo "  Files: $thumb_count"
         read -p "  Clean thumbnail cache? [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             rm -rf "$HOME/.cache/thumbnails/"*
             echo -e "  ${GREEN}✓ Thumbnail cache cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
+        thumb_found=true
+    fi
+    
+    if [ "$thumb_found" = false ]; then
+        echo "  No thumbnail cache found"
     fi
     
     # 6. Trash
-    echo -e "\n${CYAN}Cleaning trash...${NC}"
+    echo -e "\n${CYAN}Trash/Recycle Bin:${NC}"
     if [ -d "$HOME/.local/share/Trash" ]; then
         trash_size=$(du -sh "$HOME/.local/share/Trash" 2>/dev/null | awk '{print $1}')
-        echo "  Trash size: $trash_size"
+        trash_count=$(find "$HOME/.local/share/Trash" -type f 2>/dev/null | wc -l)
+        echo "  Location: $HOME/.local/share/Trash"
+        echo "  Size: $trash_size"
+        echo "  Files: $trash_count"
         read -p "  Empty trash? [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             rm -rf "$HOME/.local/share/Trash/"*
             echo -e "  ${GREEN}✓ Trash emptied${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
+    else
+        echo "  No trash directory found"
     fi
     
     # 7. Old kernels (Debian/Ubuntu)
     if command_exists dpkg && [ "$requires_sudo" = true ]; then
-        echo -e "\n${CYAN}Checking for old kernels...${NC}"
-        OLD_KERNELS=$(dpkg --list | grep linux-image | awk '{print $2}' | grep -v "$(uname -r)" | wc -l)
+        echo -e "\n${CYAN}Old Kernels (Debian/Ubuntu):${NC}"
+        CURRENT_KERNEL=$(uname -r)
+        OLD_KERNELS=$(dpkg --list | grep linux-image | awk '{print $2}' | grep -v "$CURRENT_KERNEL" | wc -l)
         if [ "$OLD_KERNELS" -gt 0 ]; then
-            echo "  Found $OLD_KERNELS old kernel(s)"
+            echo "  Current kernel: $CURRENT_KERNEL"
+            echo "  Old kernels found: $OLD_KERNELS"
             read -p "  Remove old kernels? (requires sudo) [y/N]: " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 sudo apt-get autoremove --purge -y
                 echo -e "  ${GREEN}✓ Old kernels removed${NC}"
+            else
+                echo -e "  ${YELLOW}✗ Skipped${NC}"
             fi
         else
             echo "  No old kernels to remove"
         fi
     fi
     
-    # 8. Browser cache (optional)
-    echo -e "\n${CYAN}Browser caches (optional):${NC}"
+    # 8. Browser cache
+    echo -e "\n${CYAN}Browser Caches:${NC}"
     
     # Firefox
     if [ -d "$HOME/.mozilla/firefox" ]; then
         ff_size=$(du -sh "$HOME/.mozilla/firefox" 2>/dev/null | awk '{print $1}')
         echo "  Firefox cache size: $ff_size"
-        read -p "  Clean Firefox cache? [y/N]: " -n 1 -r
+        read -p "  Clean Firefox cache? (will close Firefox) [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
+            pkill -9 firefox 2>/dev/null
             rm -rf "$HOME/.mozilla/firefox/"*"/cache2"
             rm -rf "$HOME/.cache/mozilla/firefox"
             echo -e "  ${GREEN}✓ Firefox cache cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
     fi
     
-    # Chrome/Chromium
+    # Chrome
     if [ -d "$HOME/.cache/google-chrome" ]; then
         chrome_size=$(du -sh "$HOME/.cache/google-chrome" 2>/dev/null | awk '{print $1}')
         echo "  Chrome cache size: $chrome_size"
-        read -p "  Clean Chrome cache? [y/N]: " -n 1 -r
+        read -p "  Clean Chrome cache? (will close Chrome) [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
+            pkill -9 chrome 2>/dev/null
             rm -rf "$HOME/.cache/google-chrome"
             echo -e "  ${GREEN}✓ Chrome cache cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
     fi
     
+    # Chromium
     if [ -d "$HOME/.cache/chromium" ]; then
         chromium_size=$(du -sh "$HOME/.cache/chromium" 2>/dev/null | awk '{print $1}')
         echo "  Chromium cache size: $chromium_size"
-        read -p "  Clean Chromium cache? [y/N]: " -n 1 -r
+        read -p "  Clean Chromium cache? (will close Chromium) [y/N]: " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
+            pkill -9 chromium 2>/dev/null
             rm -rf "$HOME/.cache/chromium"
             echo -e "  ${GREEN}✓ Chromium cache cleaned${NC}"
+        else
+            echo -e "  ${YELLOW}✗ Skipped${NC}"
         fi
     fi
     
     # 9. Orphaned packages
     if command_exists apt-get; then
-        echo -e "\n${CYAN}Checking for orphaned packages...${NC}"
-        ORPHANED=$(apt-get autoremove --dry-run 2>/dev/null | grep -Po '^\d+(?= upgraded)')
+        echo -e "\n${CYAN}Orphaned Packages:${NC}"
+        ORPHANED=$(apt-get autoremove --dry-run 2>/dev/null | grep -Po '^\d+(?= upgraded)' | head -1)
         if [ -n "$ORPHANED" ] && [ "$ORPHANED" -gt 0 ]; then
-            echo "  Found orphaned packages"
+            echo "  Orphaned packages found"
             read -p "  Remove orphaned packages? (requires sudo) [y/N]: " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 sudo apt-get autoremove -y
                 echo -e "  ${GREEN}✓ Orphaned packages removed${NC}"
+            else
+                echo -e "  ${YELLOW}✗ Skipped${NC}"
             fi
+        else
+            echo "  No orphaned packages found"
         fi
     fi
     
     echo -e "\n${BOLD}${GREEN}✓ Cleanup process complete!${NC}\n"
+}
+
+# Check for updates
+check_updates() {
+    print_header "CHECKING FOR UPDATES"
+    
+    echo -e "${CYAN}Current version: ${BOLD}$VERSION${NC}"
+    echo -e "${CYAN}Checking GitHub repository...${NC}\n"
+    
+    # Check if curl or wget is available
+    if ! command_exists curl && ! command_exists wget; then
+        echo -e "${RED}Error: curl or wget is required to check for updates${NC}"
+        echo "Please install curl or wget and try again"
+        return 1
+    fi
+    
+    # Download the latest script to temporary location
+    TEMP_SCRIPT=$(mktemp)
+    
+    if command_exists curl; then
+        curl -fsSL "$GITHUB_RAW_URL" -o "$TEMP_SCRIPT" 2>/dev/null
+    else
+        wget -q "$GITHUB_RAW_URL" -O "$TEMP_SCRIPT" 2>/dev/null
+    fi
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Error: Failed to download script from GitHub${NC}"
+        echo "Please check your internet connection and try again"
+        rm -f "$TEMP_SCRIPT"
+        return 1
+    fi
+    
+    # Extract version from downloaded script
+    REMOTE_VERSION=$(grep "^VERSION=" "$TEMP_SCRIPT" | head -1 | cut -d'"' -f2)
+    
+    if [ -z "$REMOTE_VERSION" ]; then
+        echo -e "${RED}Error: Could not determine remote version${NC}"
+        rm -f "$TEMP_SCRIPT"
+        return 1
+    fi
+    
+    echo -e "${CYAN}Latest version: ${BOLD}$REMOTE_VERSION${NC}\n"
+    
+    # Compare versions
+    if [ "$VERSION" = "$REMOTE_VERSION" ]; then
+        echo -e "${GREEN}✓ You are running the latest version!${NC}\n"
+        rm -f "$TEMP_SCRIPT"
+        return 0
+    fi
+    
+    echo -e "${YELLOW}⚠ A new version is available!${NC}"
+    echo -e "  Current: $VERSION"
+    echo -e "  Latest:  $REMOTE_VERSION\n"
+    
+    # Get last commit info if curl/wget available
+    if command_exists curl; then
+        COMMIT_INFO=$(curl -fsSL "$GITHUB_API_URL" 2>/dev/null | grep -m1 '"message"' | cut -d'"' -f4)
+        if [ -n "$COMMIT_INFO" ]; then
+            echo -e "${CYAN}Latest changes:${NC}"
+            echo -e "  $COMMIT_INFO\n"
+        fi
+    fi
+    
+    read -p "Would you like to update now? [y/N]: " -n 1 -r
+    echo
+    
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}Update cancelled${NC}\n"
+        rm -f "$TEMP_SCRIPT"
+        return 0
+    fi
+    
+    # Perform update
+    echo -e "\n${CYAN}Updating script...${NC}\n"
+    
+    # Update VERSION in the downloaded script to match remote version
+    sed -i "s/^VERSION=\".*\"/VERSION=\"$REMOTE_VERSION\"/" "$TEMP_SCRIPT"
+    
+    # Determine script location
+    SCRIPT_PATH="$0"
+    
+    # If script is installed system-wide, need sudo
+    if [ -f "$INSTALL_PATH" ] && [ "$SCRIPT_PATH" = "$INSTALL_PATH" ]; then
+        if [ "$EUID" -ne 0 ]; then
+            echo -e "${YELLOW}System-wide installation detected, sudo required${NC}"
+            sudo cp "$TEMP_SCRIPT" "$INSTALL_PATH"
+            sudo chmod +x "$INSTALL_PATH"
+        else
+            cp "$TEMP_SCRIPT" "$INSTALL_PATH"
+            chmod +x "$INSTALL_PATH"
+        fi
+        echo -e "${GREEN}✓ Updated system-wide installation: $INSTALL_PATH${NC}"
+    else
+        # Update current script
+        cp "$TEMP_SCRIPT" "$SCRIPT_PATH"
+        chmod +x "$SCRIPT_PATH"
+        echo -e "${GREEN}✓ Updated script: $SCRIPT_PATH${NC}"
+    fi
+    
+    rm -f "$TEMP_SCRIPT"
+    
+    echo -e "\n${BOLD}${GREEN}✓ Update completed successfully!${NC}"
+    echo -e "${CYAN}Version $VERSION → $REMOTE_VERSION${NC}\n"
+    echo -e "Please restart the script to use the new version.\n"
+}
+
+# Auto-update on startup (silent check)
+auto_update_check() {
+    # Only check if curl/wget available and online
+    if command_exists curl || command_exists wget; then
+        # Quick connectivity check
+        if ping -c 1 -W 1 8.8.8.8 >/dev/null 2>&1; then
+            TEMP_SCRIPT=$(mktemp)
+            
+            if command_exists curl; then
+                curl -fsSL "$GITHUB_RAW_URL" -o "$TEMP_SCRIPT" 2>/dev/null
+            else
+                wget -q "$GITHUB_RAW_URL" -O "$TEMP_SCRIPT" 2>/dev/null
+            fi
+            
+            if [ $? -eq 0 ]; then
+                REMOTE_VERSION=$(grep "^VERSION=" "$TEMP_SCRIPT" | head -1 | cut -d'"' -f2)
+                
+                if [ -n "$REMOTE_VERSION" ] && [ "$VERSION" != "$REMOTE_VERSION" ]; then
+                    echo -e "${YELLOW}⚠ Update available: v$VERSION → v$REMOTE_VERSION${NC}"
+                    echo -e "  Run: ${CYAN}$0 --update${NC} to update\n"
+                fi
+            fi
+            
+            rm -f "$TEMP_SCRIPT"
+        fi
+    fi
 }
 
 # Security audit
@@ -763,7 +980,7 @@ security_audit() {
 
 # Install script globally
 install_script() {
-    echo -e "${BOLD}${CYAN}Installing System Scanner...${NC}\n"
+    echo -e "${BOLD}${CYAN}Installing CLIpper...${NC}\n"
     
     if [ "$EUID" -ne 0 ]; then
         echo -e "${RED}Error: Installation requires sudo/root privileges${NC}"
@@ -782,12 +999,12 @@ SCRIPT_EOF
     chmod +x "$INSTALL_PATH"
     
     echo -e "${GREEN}✓ Installed to: $INSTALL_PATH${NC}"
-    echo -e "${GREEN}✓ You can now run: ${BOLD}sysmon${NC}"
+    echo -e "${GREEN}✓ You can now run: ${BOLD}clipper${NC}"
     echo -e "\nAvailable commands:"
-    echo -e "  ${CYAN}sysmon --scan${NC}        - Full system scan"
-    echo -e "  ${CYAN}sysmon --clean${NC}       - Clean system"
-    echo -e "  ${CYAN}sysmon --menu${NC}        - Interactive menu"
-    echo -e "  ${CYAN}sysmon --help${NC}        - Show help"
+    echo -e "  ${CYAN}clipper --scan${NC}        - Full system scan"
+    echo -e "  ${CYAN}clipper --clean${NC}       - Clean system"
+    echo -e "  ${CYAN}clipper --menu${NC}        - Interactive menu"
+    echo -e "  ${CYAN}clipper --help${NC}        - Show help"
     echo ""
 }
 
@@ -800,9 +1017,9 @@ uninstall_script() {
     
     if [ -f "$INSTALL_PATH" ]; then
         rm "$INSTALL_PATH"
-        echo -e "${GREEN}✓ System Scanner uninstalled${NC}"
+        echo -e "${GREEN}✓ CLIpper uninstalled${NC}"
     else
-        echo -e "${YELLOW}System Scanner is not installed${NC}"
+        echo -e "${YELLOW}CLIpper is not installed${NC}"
     fi
 }
 
@@ -811,7 +1028,7 @@ show_menu() {
     while true; do
         clear
         echo -e "${BOLD}${BLUE}╔════════════════════════════════════════════════════╗${NC}"
-        echo -e "${BOLD}${BLUE}║${NC}        ${BOLD}${CYAN}LINUX SYSTEM SCANNER${NC} ${BOLD}${BLUE}v$VERSION${NC}          ${BOLD}${BLUE}║${NC}"
+        echo -e "${BOLD}${BLUE}║${NC}           ${BOLD}${CYAN}CLIpper${NC} ${BOLD}${BLUE}v$VERSION${NC}                    ${BOLD}${BLUE}║${NC}"
         echo -e "${BOLD}${BLUE}╚════════════════════════════════════════════════════╝${NC}\n"
         
         echo -e "${BOLD}SYSTEM INFORMATION:${NC}"
@@ -923,6 +1140,7 @@ ${BOLD}OPTIONS:${NC}
     --performance       Show only performance metrics
     --clean             Clean system (cache, temp files, logs)
     --menu              Show interactive menu
+    --update            Check for updates and update script
     --install           Install system-wide (requires sudo)
     --uninstall         Uninstall from system (requires sudo)
     --help, -h          Show this help message
@@ -950,6 +1168,7 @@ EOF
 main() {
     # If no arguments, show menu
     if [ $# -eq 0 ]; then
+        auto_update_check
         show_menu
         exit 0
     fi
@@ -961,10 +1180,15 @@ main() {
         --uninstall)
             uninstall_script
             ;;
+        --update)
+            check_updates
+            ;;
         --menu)
+            auto_update_check
             show_menu
             ;;
         --scan)
+            auto_update_check
             echo -e "${BOLD}${GREEN}Starting Complete System Scan...${NC}"
             get_os_info
             get_architecture
@@ -1013,6 +1237,7 @@ main() {
             ;;
         --version|-v)
             echo "$SCRIPT_NAME v$VERSION"
+            echo "GitHub: https://github.com/reol224/CLIpper"
             ;;
         --help|-h|*)
             show_usage
