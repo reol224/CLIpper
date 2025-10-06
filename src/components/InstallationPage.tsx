@@ -417,150 +417,141 @@ export default function InstallationPage() {
 
             <div className="space-y-2">
               <h4 className="text-white font-medium">
-                {detectedOS === "linux"
-                  ? "Linux Script Commands:"
-                  : detectedOS === "windows"
-                    ? "Windows Script Commands:"
-                    : "Available Commands:"}
+                {detectedOS === 'linux' ? 'Linux Script Commands:' : 
+                 detectedOS === 'windows' ? 'Windows Script Commands:' : 
+                 detectedOS === 'macos' ? 'macOS Script Commands:' : 'Available Commands:'}
               </h4>
               <div className="text-sm text-gray-300 space-y-1">
-                {detectedOS === "linux" ? (
+                {detectedOS === 'linux' ? (
                   <>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --scan
-                      </code>{" "}
-                      - Run comprehensive system scan
+                      <code className="text-green-400">./clipper_linux.sh --scan</code> - Run complete system scan
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --scan-quick
-                      </code>{" "}
-                      - Quick scan (basic info)
+                      <code className="text-green-400">./clipper_linux.sh --scan-quick</code> - Run quick scan (basic info only)
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --hardware
-                      </code>{" "}
-                      - Hardware info only
+                      <code className="text-green-400">./clipper_linux.sh --hardware</code> - Show only hardware information
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --network
-                      </code>{" "}
-                      - Network info only
+                      <code className="text-green-400">./clipper_linux.sh --network</code> - Show only network information
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --performance
-                      </code>{" "}
-                      - Performance metrics
+                      <code className="text-green-400">./clipper_linux.sh --performance</code> - Show only performance metrics
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --clean
-                      </code>{" "}
-                      - Clean system files
+                      <code className="text-green-400">./clipper_linux.sh --security</code> - Run security audit
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --export [FILE]
-                      </code>{" "}
-                      - Export to JSON
+                      <code className="text-green-400">./clipper_linux.sh --clean</code> - Clean system (cache, temp files, logs)
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --help
-                      </code>{" "}
-                      - Show all commands
+                      <code className="text-green-400">./clipper_linux.sh --export [FILE]</code> - Export results to JSON file
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        ./clipper_linux.sh --version
-                      </code>{" "}
-                      - Show version
+                      <code className="text-green-400">./clipper_linux.sh --menu</code> - Show interactive menu
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --update</code> - Check for updates and update script
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --help</code> - Show help message
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_linux.sh --version</code> - Show version information
                     </div>
                   </>
-                ) : detectedOS === "windows" ? (
+                ) : detectedOS === 'windows' ? (
                   <>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --scan
-                      </code>{" "}
-                      - Run comprehensive system scan
+                      <code className="text-green-400">clipper_windows.bat --scan</code> - Run complete system scan
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --scan-quick
-                      </code>{" "}
-                      - Quick scan (basic info)
+                      <code className="text-green-400">clipper_windows.bat --scan-quick</code> - Run quick scan (basic info only)
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --hardware
-                      </code>{" "}
-                      - Hardware info only
+                      <code className="text-green-400">clipper_windows.bat --hardware</code> - Show only hardware information
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --network
-                      </code>{" "}
-                      - Network info only
+                      <code className="text-green-400">clipper_windows.bat --network</code> - Show only network information
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --performance
-                      </code>{" "}
-                      - Performance metrics
+                      <code className="text-green-400">clipper_windows.bat --performance</code> - Show only performance metrics
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --security
-                      </code>{" "}
-                      - Security audit
+                      <code className="text-green-400">clipper_windows.bat --security</code> - Run security audit
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --clean
-                      </code>{" "}
-                      - Clean system files
+                      <code className="text-green-400">clipper_windows.bat --clean</code> - Clean system (cache, temp files, logs)
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --export [FILE]
-                      </code>{" "}
-                      - Export to text file
+                      <code className="text-green-400">clipper_windows.bat --export [FILE]</code> - Export results to text file
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --help
-                      </code>{" "}
-                      - Show all commands
+                      <code className="text-green-400">clipper_windows.bat --menu</code> - Show interactive menu
                     </div>
                     <div>
-                      <code className="text-green-400">
-                        clipper_windows.bat --version
-                      </code>{" "}
-                      - Show version
+                      <code className="text-green-400">clipper_windows.bat --update</code> - Check for updates and update script
+                    </div>
+                    <div>
+                      <code className="text-green-400">clipper_windows.bat --help</code> - Show help message
+                    </div>
+                    <div>
+                      <code className="text-green-400">clipper_windows.bat --version</code> - Show version information
+                    </div>
+                  </>
+                ) : detectedOS === 'macos' ? (
+                  <>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --scan</code> - Run complete system scan
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --scan-quick</code> - Run quick scan (basic info only)
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --hardware</code> - Show only hardware information
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --network</code> - Show only network information
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --performance</code> - Show only performance metrics
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --security</code> - Run security audit
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --clean</code> - Clean system (cache, temp files, logs)
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --export [FILE]</code> - Export results to text file
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --menu</code> - Show interactive menu
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --update</code> - Check for updates and update script
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --help</code> - Show help message
+                    </div>
+                    <div>
+                      <code className="text-green-400">./clipper_macos.sh --version</code> - Show version information
                     </div>
                   </>
                 ) : (
                   <>
                     <div>
-                      <code className="text-green-400">clipper --scan</code> -
-                      Run system scan
+                      <code className="text-green-400">clipper --scan</code> - Run system scan
                     </div>
                     <div>
-                      <code className="text-green-400">clipper --optimize</code>{" "}
-                      - Optimize system
+                      <code className="text-green-400">clipper --optimize</code> - Optimize system
                     </div>
                     <div>
-                      <code className="text-green-400">clipper --security</code>{" "}
-                      - Security audit
+                      <code className="text-green-400">clipper --security</code> - Security audit
                     </div>
                     <div>
-                      <code className="text-green-400">clipper --help</code> -
-                      Show all commands
+                      <code className="text-green-400">clipper --help</code> - Show all commands
                     </div>
                   </>
                 )}
