@@ -1,27 +1,26 @@
 # CLIpper
 
-A cross-platform desktop application with a Metasploit-like terminal interface that provides system optimization and security tools similar to Advanced SystemCare.
-
-![CLIpper Interface](https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=800&q=80)
+A cross-platform script that provides system optimization and security tools.
 
 ## 🚀 Features
 
-### Terminal-Style Interface
-- **Command-line interface** with syntax highlighting and autocomplete functionality
-- **Cross-platform compatibility** using React/Vite frontend
-- **Dark terminal aesthetic** with green accent colors for authentic CLI experience
+
 
 ### System Management Tools
-- **System scanning modules** for malware detection, privacy protection, and performance issues
-- **One-click system optimization** tools (registry cleaner, junk file removal, startup manager)
-- **Vulnerability assessment** and security hardening features
-- **OS-specific commands** for Windows, macOS, and Linux
+- **Comprehensive System Scanning** - Complete system analysis with hardware, network, and performance metrics
+- **Quick Scan Mode** - Fast basic system information gathering
+- **Modular Scanning** - Individual scans for hardware, network, performance, and security
+- **System Cleaning** - Cache, temporary files, and log cleanup
+- **Security Auditing** - Vulnerability assessment and security hardening
+- **Interactive Menu** - User-friendly menu interface for all operations
+- **Export Functionality** - Save scan results to JSON (Linux/macOS) or text files (Windows)
+- **Auto-Update System** - Built-in script update mechanism
 
 ### Installation & Usage
 - **Automatic OS detection** with manual selection fallback
 - **Copy-to-clipboard** functionality for easy command execution
 - **Step-by-step installation guide** with platform-specific requirements
-- **Interactive command reference** with usage examples
+- **Interactive command reference** with usage examples for all platforms
 
 ## 🛠️ Tech Stack
 
@@ -29,7 +28,7 @@ A cross-platform desktop application with a Metasploit-like terminal interface t
 - **UI Components**: Radix UI + shadcn/ui
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
-- **Routing**: React Router v6
+- **Build Tool**: Vite
 
 ## 📦 Installation
 
@@ -62,33 +61,95 @@ A cross-platform desktop application with a Metasploit-like terminal interface t
 
 ## 🎯 Usage
 
-### Available Routes
-- `/` - Installation guide with OS-specific instructions
+### End-User Installation
 
-### CLI Commands (Simulated)
+#### Windows
 ```bash
-clipper --scan          # Run system scan
-clipper --optimize      # Optimize system performance
-clipper --security      # Run security assessment
-clipper --help          # Show all available commands
+# Primary method (using curl)
+curl -o clipper_windows.bat https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat
+clipper_windows.bat --scan
+
+# Alternative (using PowerShell)
+Invoke-WebRequest -Uri "https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_windows.bat" -OutFile "clipper_windows.bat"
+.\clipper_windows.bat --scan
 ```
+
+#### Linux
+```bash
+curl -o clipper_linux.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_linux.sh
+chmod +x clipper_linux.sh
+./clipper_linux.sh --scan
+```
+
+#### macOS
+```bash
+curl -o clipper_macos.sh https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build/clipper_macos.sh
+chmod +x clipper_macos.sh
+./clipper_macos.sh --scan
+```
+
+### Available Commands
+
+#### Linux Commands
+- `./clipper_linux.sh --scan` - Run complete system scan
+- `./clipper_linux.sh --scan-quick` - Run quick scan (basic info only)
+- `./clipper_linux.sh --hardware` - Show only hardware information
+- `./clipper_linux.sh --network` - Show only network information
+- `./clipper_linux.sh --performance` - Show only performance metrics
+- `./clipper_linux.sh --security` - Run security audit
+- `./clipper_linux.sh --clean` - Clean system (cache, temp files, logs)
+- `./clipper_linux.sh --export [FILE]` - Export results to JSON file
+- `./clipper_linux.sh --menu` - Show interactive menu
+- `./clipper_linux.sh --update` - Check for updates and update script
+- `./clipper_linux.sh --help` - Show help message
+- `./clipper_linux.sh --version` - Show version information
+
+#### Windows Commands
+- `clipper_windows.bat --scan` - Run complete system scan
+- `clipper_windows.bat --scan-quick` - Run quick scan (basic info only)
+- `clipper_windows.bat --hardware` - Show only hardware information
+- `clipper_windows.bat --network` - Show only network information
+- `clipper_windows.bat --performance` - Show only performance metrics
+- `clipper_windows.bat --security` - Run security audit
+- `clipper_windows.bat --clean` - Clean system (cache, temp files, logs)
+- `clipper_windows.bat --export [FILE]` - Export results to text file
+- `clipper_windows.bat --menu` - Show interactive menu
+- `clipper_windows.bat --update` - Check for updates and update script
+- `clipper_windows.bat --help` - Show help message
+- `clipper_windows.bat --version` - Show version information
+
+#### macOS Commands
+- `./clipper_macos.sh --scan` - Run complete system scan
+- `./clipper_macos.sh --scan-quick` - Run quick scan (basic info only)
+- `./clipper_macos.sh --hardware` - Show only hardware information
+- `./clipper_macos.sh --network` - Show only network information
+- `./clipper_macos.sh --performance` - Show only performance metrics
+- `./clipper_macos.sh --security` - Run security audit
+- `./clipper_macos.sh --clean` - Clean system (cache, temp files, logs)
+- `./clipper_macos.sh --export [FILE]` - Export results to text file
+- `./clipper_macos.sh --menu` - Show interactive menu
+- `./clipper_macos.sh --update` - Check for updates and update script
+- `./clipper_macos.sh --help` - Show help message
+- `./clipper_macos.sh --version` - Show version information
 
 ## 🏗️ Project Structure
 
 ```
 src/
 ├── components/
-│   ├── ui/                 # shadcn/ui components
-│   ├── CommandProcessor.tsx # Command processing logic
+│   ├── ui/                 # shadcn/ui components (40+ components)
 │   ├── InstallationPage.tsx # OS-specific installation guide
-│   ├── ScanResults.tsx     # Scan results display
-│   ├── Terminal.tsx        # Main terminal interface
 │   └── home.tsx           # Home page component
 ├── lib/
 │   └── utils.ts           # Utility functions
-├── stories/               # Storybook stories
+├── stories/               # Storybook stories for all UI components
 ├── types/                 # TypeScript type definitions
 └── tempobook/            # Tempo platform storyboards
+
+public/
+├── clipper_linux.sh       # Linux system management script
+├── clipper_windows.bat    # Windows system management script
+└── clipper_macos.sh       # macOS system management script
 ```
 
 ## 🔧 Available Scripts
@@ -97,56 +158,42 @@ src/
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
-- `npm run types:supabase` - Generate Supabase types
-
-## 🎨 UI Components
-
-This project uses a comprehensive set of UI components from shadcn/ui including:
-
-- **Layout**: Cards, Separators, Aspect Ratio
-- **Navigation**: Tabs, Menubar, Navigation Menu
-- **Forms**: Input, Select, Checkbox, Radio Group
-- **Feedback**: Alert, Toast, Progress, Skeleton
-- **Overlays**: Dialog, Popover, Tooltip, Sheet
-- **Data Display**: Table, Badge, Avatar, Carousel
 
 ## 🌐 Cross-Platform Support
 
 ### Windows
-- npm package installation
-- Administrator privileges required
-- Windows 10/11 compatibility
+- **Script**: `clipper_windows.bat`
+- **Download**: curl or PowerShell Invoke-WebRequest
+- **Export Format**: Text files
+- **Requirements**: Windows 10/11, Command Prompt or PowerShell
 
 ### macOS
-- Homebrew installation
-- Xcode Command Line Tools required
-- macOS 10.15+ compatibility
+- **Script**: `clipper_macos.sh`
+- **Download**: curl
+- **Export Format**: Text files
+- **Requirements**: macOS 10.15+, Terminal, chmod permissions
 
 ### Linux
-- apt package installation (Ubuntu/Debian)
-- sudo privileges required
-- curl/wget dependencies
+- **Script**: `clipper_linux.sh`
+- **Download**: curl or wget
+- **Export Format**: JSON files
+- **Requirements**: bash shell, chmod permissions, standard Linux utilities
 
 ## 🔒 Security Features
 
-- **Malware Detection**: System-wide malware scanning
-- **Privacy Protection**: Privacy vulnerability assessment
-- **Security Hardening**: System security configuration
-- **Vulnerability Assessment**: Security weakness identification
+- **System Security Audit**: Comprehensive security vulnerability assessment
+- **Performance Monitoring**: Real-time system performance metrics
+- **Hardware Analysis**: Detailed hardware information and health checks
+- **Network Security**: Network configuration and security analysis
+- **System Cleaning**: Safe removal of temporary files, cache, and logs
 
 ## 🚀 Performance Optimization
 
-- **Registry Cleaning**: Windows registry optimization
-- **Junk File Removal**: Temporary file cleanup
-- **Startup Management**: Boot time optimization
-- **System Monitoring**: Performance metrics tracking
-
-## 📱 Responsive Design
-
-The interface is fully responsive and works across:
-- Desktop computers
-- Tablets
-- Mobile devices
+- **Quick Scan Mode**: Fast system overview for immediate insights
+- **Modular Scanning**: Target specific system areas for focused analysis
+- **Export Capabilities**: Save results for later analysis and reporting
+- **Interactive Menu**: User-friendly interface for non-technical users
+- **Auto-Update**: Keep scripts current with latest features and security patches
 
 ## 🤝 Contributing
 
@@ -162,13 +209,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-Need help? Run `clipper --help` for more options or check the installation guide at `/install`.
+Need help? 
+- Run `--help` with any script for detailed usage information
+- Check the installation guide in the web interface
+- Review the command reference for your specific platform
 
 ## 🔗 Links
 
 - [Live Demo](https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build)
-- [Documentation](#)
-- [Issue Tracker](#)
+- [Script Downloads](https://aa6f8cd6-9526-49fe-9abe-c7500cf69a7c.canvases.tempo.build)
 
 ---
 
